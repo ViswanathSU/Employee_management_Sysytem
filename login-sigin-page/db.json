@@ -1,0 +1,36 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "name": "Admin",
+      "email": "admin@gmail.com",
+      "password": "12345678",
+      "department": "MD",
+      "role": "Backend"
+    },
+    {
+      "id": "0e04",
+      "name": "Vaishnavi K",
+      "email": "viswaviswanath1407@gmail.com",
+      "password": "Viswa@2004",
+      "confirmpassword": "Viswa@2004",
+      "department": "Fresher",
+      "role": "UIUX"
+    }
+  ],
+  "employees": [
+    {
+      "name": "Don",
+      "email": "viswanath.2102257@srec.ac.in",
+      "department": "Fresher",
+      "role": "Testing",
+      "status": "ACTIVE",
+      "assets": {
+        "laptop": false,
+        "mobile": false
+      },
+      "assetImages": {},
+      "id": "2b09"
+    }
+  ]
+}

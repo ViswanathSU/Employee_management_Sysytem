@@ -1,80 +1,73 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const BASE_URL = "https://06414ab0eba6.ngrok-free.app";
+const BASE_URL = "https://hard-ingratiating-ila.ngrok-free.dev";
 
 /* =========================
-   AXIOS INSTANCE
+   LOGIN → auth/login
 ========================= */
-const api = axios.create({
-  baseURL: BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
-/* =========================
-   REGISTER USER
-========================= */
-export const registerUser = async (payload) => {
+export const loginUser = async (payload, rememberMe = false) => {
   try {
-    const response = await api.post("/auth/register", payload);
-
-    return {
-      status: "success",
-      message: response.data?.msg || "Registered successfully",
+    // IMPORTANT: send ONLY required fields
+    const loginPayload = {
+      email: payload.email,
+      password: payload.password,
     };
-  } catch (error) {
+
+    const res = await axios.post(
+      `${BASE_URL}/auth/login`,
+      loginPayload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const token = res.data?.token;
+
+    if (!token) {
+      return { status: "error", message: "Invalid email or password" };
+    }
+
+    // ✅ Store token
+    Cookies.set("token", token, {
+      expires: rememberMe ? 7 : 1,
+    });
+
+    return { status: "success" };
+  } catch (err) {
     return {
       status: "error",
       message:
-        error.response?.data?.msg ||
-        error.response?.data?.message ||
-        "Registration failed",
+        err.response?.data?.message ||
+        "Invalid email or password",
     };
   }
 };
 
 /* =========================
-   LOGIN USER
+   REGISTER → auth/register
 ========================= */
-export const loginUser = async (payload, rememberMe = false) => {
+export const registerUser = async (payload) => {
   try {
-    const response = await api.post("/auth/login", payload);
+    await axios.post(
+      `${BASE_URL}/auth/register`,
+      payload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
-    const { token, user, msg } = response.data;
-
-    if (!token) {
-      throw new Error("Token not received");
-    }
-
-    // Store JWT
-    Cookies.set("token", token, {
-      expires: rememberMe ? 7 : 1,
-      secure: true,
-      sameSite: "strict",
-    });
-
-    // Remember email
-    if (rememberMe) {
-      Cookies.set("userEmail", payload.email, { expires: 7 });
-    } else {
-      Cookies.remove("userEmail");
-    }
-
-    return {
-      status: "success",
-      token,
-      user,
-      message: msg || "Login successful",
-    };
-  } catch (error) {
+    return { status: "success" };
+  } catch (err) {
     return {
       status: "error",
       message:
-        error.response?.data?.msg ||
-        error.response?.data?.message ||
-        "Invalid credentials",
+        err.response?.data?.message ||
+        "Registration failed",
     };
   }
 };

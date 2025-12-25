@@ -4,83 +4,147 @@ import {
   Button,
   FormControlLabel,
   Stack,
+  Paper,
+  Typography,
+  Toolbar,
+  Box,
 } from "@mui/material";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
-import Cookies from "js-cookie";
-import { loginUser } from "../api/UserApi.js";
-import { getButtonStyle, muiTextField } from "./utils";
+import { loginUser } from "../api/UserApi";
+import { useNavigate } from "react-router-dom";
+import {
+  getThemeColors,
+  getButtonStyle,
+  muiTextField,
+} from "./utils";
 
-function LoginForm({ theme }) {
-  const validationSchema = Yup.object({
-    email: Yup.string().email("Invalid Email").required("Email Required"),
-    password: Yup.string().min(6).required("Password Required"),
+const Login = () => {
+  const navigate = useNavigate();
+  const theme = "dark";
+  const colors = getThemeColors(theme);
+
+  const schema = Yup.object({
+    email: Yup.string().email("Invalid email").required("Email required"),
+    password: Yup.string().min(6).required("Password required"),
   });
 
   return (
-    <Formik
-      initialValues={{
-        email: Cookies.get("userEmail") || "",
-        password: "",
-      }}
-      validationSchema={validationSchema}
-      onSubmit={async (values) => {
-        const res = await loginUser(values);
-
-        if (res?.status === "success" && res?.token) {
-          Cookies.set("token", res.token, { expires: 1 });
-          Cookies.set("userEmail", values.email);
-
-          alert(`Welcome ${values.email}`);
-        } else {
-          alert("Invalid Credentials");
-        }
+    <Toolbar
+      disableGutters
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        background: colors.bgColor,
       }}
     >
-      {({ handleSubmit, handleChange, handleBlur, touched, errors, values }) => (
-        <Form onSubmit={handleSubmit}>
-          <Stack spacing={3} alignItems="center">
-            <TextField
-              placeholder="Email"
-              name="email"
-              value={values.email}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={touched.email && Boolean(errors.email)}
-              helperText={touched.email && errors.email}
-              sx={muiTextField(theme)}
-            />
+      <Box sx={{padding:22}}>
+      <Paper
+        elevation={10}
+        sx={{
+          width: 380,
+          p: 4,
+          borderRadius: 3,
+          backgroundColor: colors.paperColor,
+        }}
+      >
+        <Typography
+          align="center"
+          variant="h5"
+          fontWeight="bold"
+          mb={3}
+          color={colors.textColor}
+        >
+          LOGIN
+        </Typography>
 
-            <TextField
-              placeholder="Password"
-              type="password"
-              name="password"
-              value={values.password}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={touched.password && Boolean(errors.password)}
-              helperText={touched.password && errors.password}
-              sx={muiTextField(theme)}
-            />
+        <Formik
+          initialValues={{ email: "", password: "", remember: false }}
+          validationSchema={schema}
+          onSubmit={async (values) => {
+            const res = await loginUser(
+              { email: values.email, password: values.password },
+              values.remember
+            );
 
-            <FormControlLabel
-              control={<Checkbox />}
-              label="Remember me"
-            />
+            if (res.status === "success") {
+              navigate("/employees");
+            } else {
+              alert(res.message);
+            }
+          }}
+        >
+          {({ handleSubmit, handleChange, values }) => (
+            <Form onSubmit={handleSubmit}>
+              <Stack spacing={2.5} alignItems="center">
+                {/* EMAIL */}
+                <TextField
+                  name="email"
+                  label="Email"
+                  value={values.email}
+                  onChange={handleChange}
+                  sx={muiTextField(theme)}
+                  InputLabelProps={{
+                    shrink: true,
+                    sx: { color: "#bbb" },
+                  }}
+                />
 
-            <Button
-              type="submit"
-              variant="contained"
-              sx={{ width: "70px" }}
-              style={getButtonStyle(theme)}
-            >
-              Login
-            </Button>
-          </Stack>
-        </Form>
-      )}
-    </Formik>
+                {/* PASSWORD */}
+                <TextField
+                  name="password"
+                  type="password"
+                  label="Password"
+                  value={values.password}
+                  onChange={handleChange}
+                  sx={muiTextField(theme)}
+                  InputLabelProps={{
+                    shrink: true,
+                    sx: { color: "#bbb" },
+                  }}
+                />
+
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      name="remember"
+                      checked={values.remember}
+                      onChange={handleChange}
+                    />
+                  }
+                  label="Remember me"
+                  sx={{ color: colors.textColor }}
+                />
+
+                <Button type="submit" sx={getButtonStyle(theme)}>
+                  LOGIN
+                </Button>
+
+                <Stack direction="row" spacing={1}>
+                  <Typography color={colors.textColor}>
+                    Don&apos;t have an account?
+                  </Typography>
+                  <Typography
+                    sx={{
+                      cursor: "pointer",
+                      color: "#00e5ff",
+                      fontWeight: "bold",
+                    }}
+                    onClick={() => navigate("/signin")}
+                  >
+                    Sign up
+                  </Typography>
+                </Stack>
+              </Stack>
+            </Form>
+          )}
+        </Formik>
+      </Paper>
+    </Box>
+    </Toolbar>
   );
-}
+};
 
-export default LoginForm;
+export default Login;

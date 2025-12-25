@@ -4,181 +4,189 @@ import {
   Stack,
   Typography,
   MenuItem,
+  Paper,
+  Toolbar,
+  Box,
 } from "@mui/material";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
-import Cookies from "js-cookie";
-import { registerUser } from "../api/UserApi.js";
-import { getButtonStyle, muiTextField } from "./utils";
+import { registerUser } from "../api/UserApi";
+import { useNavigate } from "react-router-dom";
+import {
+  getThemeColors,
+  getButtonStyle,
+  muiTextField,
+} from "./utils";
 
 const DEPARTMENTS = ["MD", "TL", "Fresher"];
 const ROLES = ["Backend", "Frontend", "UIUX", "Testing"];
 
-function SignIn({ setView, theme }) {
-  const validationSchema = Yup.object({
-    name: Yup.string().required("Name Required"),
-    email: Yup.string().email("Invalid Email").required("Email Required"),
-    password: Yup.string().min(8, "Min 8 chars").required("Password Required"),
+const Signin = () => {
+  const navigate = useNavigate();
+  const theme = "dark";
+  const colors = getThemeColors(theme);
+
+  const schema = Yup.object({
+    name: Yup.string().required("Name required"),
+    email: Yup.string().email("Invalid email").required("Email required"),
+    password: Yup.string().min(8, "Minimum 8 characters").required(),
     confirmpassword: Yup.string()
       .oneOf([Yup.ref("password")], "Passwords must match")
-      .required("Confirm password Required"),
-    department: Yup.string().required("Department Required"),
-    role: Yup.string().required("Role Required"),
+      .required("Confirm password required"),
+    department: Yup.string().required("Department required"),
+    role: Yup.string().required("Role required"),
   });
 
   return (
-    <Formik
-      initialValues={{
-        name: "",
-        email: "",
-        password: "",
-        confirmpassword: "",
-        department: "",
-        role: "",
+    <Toolbar
+      disableGutters
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        background: colors.bgColor,
       }}
-      validationSchema={validationSchema}
-      onSubmit={async (values) => {
-        const payload = {
-          name: values.name,
-          email: values.email,
-          password: values.password,
-          department: values.department,
-          role: values.role,
-        };
+    ><Box sx={{padding:10}}>
+      <Paper
+        elevation={10}
+        sx={{
+          width: 420,
+          p: 4,
+          borderRadius: 3,
+          backgroundColor: colors.paperColor,
+        }}
+      >
+        <Typography
+          align="center"
+          variant="h5"
+          mb={3}
+          fontWeight="bold"
+          color={colors.textColor}
+        >
+          REGISTER
+        </Typography>
 
-        const res = await registerUser(payload);
+        <Formik
+          initialValues={{
+            name: "",
+            email: "",
+            password: "",
+            confirmpassword: "",
+            department: "",
+            role: "",
+          }}
+          validationSchema={schema}
+          onSubmit={async (values) => {
+            const payload = {
+              name: values.name,
+              email: values.email,
+              password: values.password,
+              department: values.department,
+              role: values.role,
+            };
 
-        if (res?.status === "success") {
-          alert("Registered Successfully");
-          setView("login");
-        } else {
-          alert(res?.message || "Registration Failed");
-        }
-      }}
-    >
-      {({ handleSubmit, handleChange, handleBlur, touched, errors, values }) => (
-        <Form onSubmit={handleSubmit}>
-          <Stack spacing={3} alignItems="center">
-            {/* NAME */}
-            <TextField
-              placeholder="Name"
-              name="name"
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={touched.name && Boolean(errors.name)}
-              helperText={touched.name && errors.name}
-              sx={muiTextField(theme)}
-            />
+            await registerUser(payload);
+            alert("Registered successfully");
+            navigate("/");
+          }}
+        >
+          {({ handleSubmit, handleChange, values }) => (
+            <Form onSubmit={handleSubmit}>
+              <Stack spacing={2.3} alignItems="center">
+                <TextField
+                  name="name"
+                  placeholder="Name"
+                  value={values.name}
+                  onChange={handleChange}
+                  sx={muiTextField(theme)}
+                  InputLabelProps={{ shrink: true, sx: { color: "#bbb" } }}
+                />
 
-            {/* EMAIL */}
-            <TextField
-              placeholder="Email"
-              name="email"
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={touched.email && Boolean(errors.email)}
-              helperText={touched.email && errors.email}
-              sx={muiTextField(theme)}
-            />
+                <TextField
+                  name="email"
+                  placeholder="Email"
+                  value={values.email}
+                  onChange={handleChange}
+                  sx={muiTextField(theme)}
+                  InputLabelProps={{ shrink: true, sx: { color: "#bbb" } }}
+                />
 
-            {/* DEPARTMENT */}
-            <TextField
-              select
-              label="Department"
-              name="department"
-              value={values.department}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={touched.department && Boolean(errors.department)}
-              helperText={touched.department && errors.department}
-              sx={muiTextField(theme)}
-            >
-              {DEPARTMENTS.map((dept) => (
-                <MenuItem key={dept} value={dept}>
-                  {dept}
-                </MenuItem>
-              ))}
-            </TextField>
+                <TextField
+                  select
+                  name="department"
+                  label="Department"
+                  value={values.department}
+                  onChange={handleChange}
+                  sx={muiTextField(theme)}
+                  InputLabelProps={{ shrink: true, sx: { color: "#bbb" } }}
+                >
+                  {DEPARTMENTS.map((d) => (
+                    <MenuItem key={d} value={d}>
+                      {d}
+                    </MenuItem>
+                  ))}
+                </TextField>
 
-            {/* ROLE */}
-            <TextField
-              select
-              label="Role"
-              name="role"
-              value={values.role}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={touched.role && Boolean(errors.role)}
-              helperText={touched.role && errors.role}
-              sx={muiTextField(theme)}
-            >
-              {ROLES.map((role) => (
-                <MenuItem key={role} value={role}>
-                  {role}
-                </MenuItem>
-              ))}
-            </TextField>
+                <TextField
+                  select
+                  name="role"
+                  label="Role"
+                  value={values.role}
+                  onChange={handleChange}
+                  sx={muiTextField(theme)}
+                  InputLabelProps={{ shrink: true, sx: { color: "#bbb" } }}
+                >
+                  {ROLES.map((r) => (
+                    <MenuItem key={r} value={r}>
+                      {r}
+                    </MenuItem>
+                  ))}
+                </TextField>
 
-            {/* PASSWORD */}
-            <TextField
-              placeholder="Password"
-              type="password"
-              name="password"
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={touched.password && Boolean(errors.password)}
-              helperText={touched.password && errors.password}
-              sx={muiTextField(theme)}
-            />
+                <TextField
+                  name="password"
+                  type="password"
+                  placeholder="Password"
+                  value={values.password}
+                  onChange={handleChange}
+                  sx={muiTextField(theme)}
+                  InputLabelProps={{ shrink: true, sx: { color: "#bbb" } }}
+                />
 
-            {/* CONFIRM PASSWORD */}
-            <TextField
-              placeholder="Confirm Password"
-              type="password"
-              name="confirmpassword"
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={
-                touched.confirmpassword &&
-                Boolean(errors.confirmpassword)
-              }
-              helperText={
-                touched.confirmpassword && errors.confirmpassword
-              }
-              sx={muiTextField(theme)}
-            />
+                <TextField
+                  name="confirmpassword"
+                  type="password"
+                  placeholder="Confirm Password"
+                  value={values.confirmpassword}
+                  onChange={handleChange}
+                  sx={muiTextField(theme)}
+                  InputLabelProps={{ shrink: true, sx: { color: "#bbb" } }}
+                />
 
-            {/* SUBMIT */}
-            <Button
-              type="submit"
-              variant="contained"
-              sx={{ width: "150px" }}
-              style={getButtonStyle(theme)}
-            >
-              Sign In
-            </Button>
-
-            {/* SWITCH */}
-            <div style={{ display: "flex", gap: "6px" }}>
-              <Typography variant="body2">
-                Already have an account?
-              </Typography>
-              <span
-                onClick={() => setView("login")}
-                style={{
-                  cursor: "pointer",
-                  fontWeight: "bold",
-                  color: theme === "dark" ? "#900897ff" : "#00549e",
-                }}
-              >
-                Log in
-              </span>
-            </div>
-          </Stack>
-        </Form>
-      )}
-    </Formik>
+                <Button type="submit" sx={getButtonStyle(theme)}>
+                  Sign Up
+                </Button>
+<Stack direction="row" spacing={1}>
+                  <Typography sx={{color:"#ccc"}}>Already have account ? </Typography>
+                <Typography
+                  sx={{
+                    cursor: "pointer",
+                    color: "#00e5ff",
+                    fontWeight: "bold",
+                  }}
+                  onClick={() => navigate("/")}
+                >
+                   Login
+                </Typography></Stack>
+              </Stack>
+            </Form>
+          )}
+        </Formik>
+      </Paper>
+      </Box>
+    </Toolbar>
   );
-}
+};
 
-export default SignIn;
+export default Signin;

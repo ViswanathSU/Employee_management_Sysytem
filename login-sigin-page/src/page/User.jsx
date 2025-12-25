@@ -52,21 +52,7 @@ function User() {
       }}
     >
       {/* THEME TOGGLE */}
-      <div
-        onClick={() => setDarkMode(!darkMode)}
-        style={{
-          position: "absolute",
-          top: "20px",
-          right: "20px",
-          cursor: "pointer",
-        }}
-      >
-        {darkMode ? (
-          <LightModeIcon sx={{ fontSize: 30, color: "#fff" }} />
-        ) : (
-          <DarkModeIcon sx={{ fontSize: 30, color: "#000" }} />
-        )}
-      </div>
+      
 
       <Box>
         <Paper
@@ -79,31 +65,6 @@ function User() {
             color: colors.textColor,
           }}
         >
-          {/* NAV */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: "40px",
-              marginBottom: "25px",
-              fontSize: "20px",
-            }}
-          >
-            <span
-              style={navItemStyle(view === "login")}
-              onClick={() => setView("login")}
-            >
-              Login
-            </span>
-
-            <span
-              style={navItemStyle(view === "sign")}
-              onClick={() => setView("sign")}
-            >
-              SignIn
-            </span>
-          </div>
-
           {view === "login" ? (
             <LoginForm theme={theme} />
           ) : (
