@@ -8,7 +8,7 @@ import {
   updateEmployee,
   deleteEmployee,
 } from "../api/employeeApi";
-
+import PersonAddAlt1OutlinedIcon from '@mui/icons-material/PersonAddAlt1Outlined';
 import EditAddDialogue from "../components/EditAddDialogue";
 import DeletionDialogue from "../components/DeletionDialogue";
 import LogoutButton from "../components/Logout";
@@ -121,40 +121,6 @@ const EmployeePage = () => {
     { field: "role", headerName: "Role", flex: 1 },
     { field: "status", headerName: "Status", flex: 1 },
 
-    // {
-    //   field: "assets",
-    //   headerName: "Assets",
-    //   flex: 1,
-    //   renderCell: (params) => (
-    //     <Button
-    //       size="small"
-    //       onClick={() => {
-    //         setSelectedAssets(params.row.assets);
-    //         setAssetDialogOpen(true);
-    //       }}
-    //     >
-    //       View ({params.row.assets.length})
-    //     </Button>
-    //   ),
-    // },
-
-    // {
-    //   field: "allocation",
-    //   headerName: "Allocations",
-    //   flex: 1,
-    //   renderCell: (params) => (
-    //     <Button
-    //       size="small"
-    //       onClick={() => {
-    //         setSelectedImages(params.row.allocation);
-    //         setImageDialogOpen(true);
-    //       }}
-    //     >
-    //       Images ({params.row.allocation.length})
-    //     </Button>
-    //   ),
-    // },
-
     {
       field: "actions",
       headerName: "Actions",
@@ -183,8 +149,11 @@ const EmployeePage = () => {
       sx={{
         minHeight: "100vh",
         background: "linear-gradient(to bottom right, #130223, #3d0066)",
+        display:"flex",justifyContent:"space-around"
       }}
     >
+      <Box sx={{width:"75%" , boxShadow:6}}>
+  
       <Box position="relative" mb={2}>
   {/* Center Title */}
   <Typography
@@ -205,6 +174,7 @@ const EmployeePage = () => {
       position: "absolute",
       top: 0,
       right: 0,
+      mr:2
     }}
   >
     <LogoutButton />
@@ -217,6 +187,7 @@ const EmployeePage = () => {
     borderRadius: 2,
     p: 1,
     boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+    margin:2
   }}
 >
    <Button
@@ -227,8 +198,9 @@ const EmployeePage = () => {
           borderRadius: 2,
         }}
         onClick={() => setEditData({})}
+        startIcon={<PersonAddAlt1OutlinedIcon/>}
       >
-        Add Employee
+        Add
       </Button>
        <Button
   variant="contained"
@@ -349,6 +321,7 @@ const EmployeePage = () => {
         images={selectedImages}
       />
     </Box>
+  </Box>
   </div>
 );
 

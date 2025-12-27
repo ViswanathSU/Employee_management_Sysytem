@@ -23,14 +23,9 @@ export const returnAsset = async ({ employeeId, assetType }) => {
 
 
 // GET EMPLOYEES WITH ASSETS
-export const getEmployeesWithAssets = async () => {
+export const getEmployeesWithAssets = async (assetType) => {
   const res = await api.get("/allocations/employeewithasset");
-
-  const data =
-    res.data?.employees ||
-    res.data?.data ||
-    res.data?.result ||
-    res.data;
-
-  return Array.isArray(data) ? data : [];
+  return res.data;
 };
+
+

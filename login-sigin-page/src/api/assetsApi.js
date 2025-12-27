@@ -16,6 +16,7 @@ export const updateAssetQuantity = async ({ assetType, totalQuantity }) => {
  * Get all assets
  */
 export const getAllAssets = async () => {
-  const res = await api.get("/getallassets");
-  return res.data; // expect ARRAY
+  const res = await api.get("/assets/getallasset");
+    return res.data;
 };
+

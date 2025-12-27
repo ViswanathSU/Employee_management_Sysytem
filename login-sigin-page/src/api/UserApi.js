@@ -6,42 +6,25 @@ const BASE_URL = "https://hard-ingratiating-ila.ngrok-free.dev";
 /* =========================
    LOGIN → auth/login
 ========================= */
-export const loginUser = async (payload, rememberMe = false) => {
+export const loginUser = async ({ email, password }) => {
   try {
-    // IMPORTANT: send ONLY required fields
-    const loginPayload = {
-      email: payload.email,
-      password: payload.password,
-    };
-
     const res = await axios.post(
       `${BASE_URL}/auth/login`,
-      loginPayload,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
+      { email, password },
+      { headers: { "Content-Type": "application/json" } }
     );
 
     const token = res.data?.token;
+    if (!token) throw new Error("Token missing");
 
-    if (!token) {
-      return { status: "error", message: "Invalid email or password" };
-    }
-
-    // ✅ Store token
-    Cookies.set("token", token, {
-      expires: rememberMe ? 7 : 1,
-    });
+    localStorage.setItem("token", token);
+    console.log("LOGIN TOKEN:", token);
 
     return { status: "success" };
   } catch (err) {
     return {
       status: "error",
-      message:
-        err.response?.data?.message ||
-        "Invalid email or password",
+      message: err.response?.data?.message || "Login failed",
     };
   }
 };

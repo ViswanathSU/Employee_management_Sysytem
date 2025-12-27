@@ -40,109 +40,98 @@ const Login = () => {
         background: colors.bgColor,
       }}
     >
-      <Box sx={{padding:22}}>
-      <Paper
-        elevation={10}
-        sx={{
-          width: 380,
-          p: 4,
-          borderRadius: 3,
-          backgroundColor: colors.paperColor,
-        }}
-      >
-        <Typography
-          align="center"
-          variant="h5"
-          fontWeight="bold"
-          mb={3}
-          color={colors.textColor}
-        >
-          LOGIN
-        </Typography>
-
-        <Formik
-          initialValues={{ email: "", password: "", remember: false }}
-          validationSchema={schema}
-          onSubmit={async (values) => {
-            const res = await loginUser(
-              { email: values.email, password: values.password },
-              values.remember
-            );
-
-            if (res.status === "success") {
-              navigate("/employees");
-            } else {
-              alert(res.message);
-            }
+      <Box sx={{ padding: 22 }}>
+        <Paper
+          elevation={10}
+          sx={{
+            width: 380,
+            p: 4,
+            borderRadius: 3,
+            backgroundColor: colors.paperColor,
+            margin:2.5
           }}
         >
-          {({ handleSubmit, handleChange, values }) => (
-            <Form onSubmit={handleSubmit}>
-              <Stack spacing={2.5} alignItems="center">
-                {/* EMAIL */}
-                <TextField
-                  name="email"
-                  label="Email"
-                  value={values.email}
-                  onChange={handleChange}
-                  sx={muiTextField(theme)}
-                  InputLabelProps={{
-                    shrink: true,
-                    sx: { color: "#bbb" },
+          <Typography
+            align="center"
+            variant="h5"
+            fontWeight="bold"
+            mb={3}
+            color={colors.textColor}
+          >
+            LOGIN
+          </Typography>
+
+          <Formik
+            initialValues={{ email: "", password: "", remember: false }}
+            validationSchema={schema}
+            onSubmit={async (values) => {
+              const res = await loginUser(
+                { email: values.email, password: values.password },
+                values.remember
+              );
+
+              if (res.status === "success") {
+                navigate("/employees");
+              } else {
+                alert(res.message);
+              }
+            }}
+          >
+            {({ handleSubmit, handleChange, values }) => (
+              <Form onSubmit={handleSubmit}>
+                <Stack spacing={2.5} alignItems="center">
+                  <TextField
+                    name="email"
+                    label="Email"
+                    value={values.email}
+                    onChange={handleChange}
+                    sx={muiTextField(theme)}
+                    InputLabelProps={{ shrink: true }}
+                  />
+
+                  <TextField
+                    name="password"
+                    type="password"
+                    label="Password"
+                    value={values.password}
+                    onChange={handleChange}
+                    sx={muiTextField(theme)}
+                    InputLabelProps={{ shrink: true }}
+                  />
+
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        name="remember"
+                        checked={values.remember}
+                        onChange={handleChange}
+                      />
+                    }
+                    label="Remember me"
+                    sx={{ color: colors.textColor }}
+                  />
+
+                  <Button type="submit" sx={getButtonStyle(theme)}>
+                    LOGIN
+                  </Button>
+                  <Stack direction="row" spacing={1}>
+                  <Typography sx={{color:"#ccc"}}> Don't have account? </Typography>
+                <Typography
+                  sx={{
+                    cursor: "pointer",
+                    color: "#00e5ff",
+                    fontWeight: "bold",
                   }}
-                />
-
-                {/* PASSWORD */}
-                <TextField
-                  name="password"
-                  type="password"
-                  label="Password"
-                  value={values.password}
-                  onChange={handleChange}
-                  sx={muiTextField(theme)}
-                  InputLabelProps={{
-                    shrink: true,
-                    sx: { color: "#bbb" },
-                  }}
-                />
-
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      name="remember"
-                      checked={values.remember}
-                      onChange={handleChange}
-                    />
-                  }
-                  label="Remember me"
-                  sx={{ color: colors.textColor }}
-                />
-
-                <Button type="submit" sx={getButtonStyle(theme)}>
-                  LOGIN
-                </Button>
-
-                <Stack direction="row" spacing={1}>
-                  <Typography color={colors.textColor}>
-                    Don&apos;t have an account?
-                  </Typography>
-                  <Typography
-                    sx={{
-                      cursor: "pointer",
-                      color: "#00e5ff",
-                      fontWeight: "bold",
-                    }}
-                    onClick={() => navigate("/signin")}
-                  >
-                    Sign up
-                  </Typography>
+                  onClick={() => navigate("/signin")}
+                >
+                   Register
+                </Typography></Stack>
                 </Stack>
-              </Stack>
-            </Form>
-          )}
-        </Formik>
-      </Paper>
-    </Box>
+              </Form>
+            )}
+          </Formik>
+        </Paper>
+      </Box>
     </Toolbar>
   );
 };

@@ -15,7 +15,8 @@ import {
 } from "@mui/material";
 import { useFormik } from "formik";
 import CancelIcon from "@mui/icons-material/Cancel";
-
+import DoneOutlinedIcon from '@mui/icons-material/DoneOutlined';
+import AddPhotoAlternateOutlinedIcon from '@mui/icons-material/AddPhotoAlternateOutlined';
 /* =====================
    OPTIONS
 ===================== */
@@ -300,6 +301,7 @@ const EditAddDialogue = ({ open, onClose, onSubmit, initialData }) => {
                 bgcolor="#f0f0f0"
                 size="small"
                 sx={{ textTransform: "none", borderRadius: 2 }}
+                startIcon = {<AddPhotoAlternateOutlinedIcon/>}
               >
                 Upload
                 <input
@@ -363,6 +365,7 @@ const EditAddDialogue = ({ open, onClose, onSubmit, initialData }) => {
             "&:hover": { bgcolor: "#8d5f3d" },
           }}
           onClick={formik.handleSubmit}
+          startIcon={<DoneOutlinedIcon/>}
         >
           Save
         </Button>
