@@ -11,7 +11,9 @@ const LogoutButton = () => {
   };
 
   return (
-    <Button color="primary" variant="contained" onClick={handleLogout}>
+    <Button sx={{background: "linear-gradient(to right, #4f6f52, #6b8f71)",
+  color: "#ffffff",
+   }} variant="contained" onClick={handleLogout}>
       Logout
     </Button>
   );

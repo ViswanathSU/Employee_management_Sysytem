@@ -14,7 +14,7 @@ const EmployeeAssets = () => {
   const loadData = async () => {
     try {
       const data = await getEmployeeAssetsMerged();
-      console.log("EMPLOYEE ASSET ROWS ✅", data);
+      console.log("EMPLOYEE ASSET ROWS ", data);
       setRows(data);
     } catch (err) {
       console.error("Failed to load employee assets", err);

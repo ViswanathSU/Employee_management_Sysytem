@@ -27,5 +27,3 @@ export const getEmployeesWithAssets = async (assetType) => {
   const res = await api.get("/allocations/employeewithasset");
   return res.data;
 };
-
-

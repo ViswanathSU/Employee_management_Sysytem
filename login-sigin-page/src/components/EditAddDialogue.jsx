@@ -15,8 +15,10 @@ import {
 } from "@mui/material";
 import { useFormik } from "formik";
 import CancelIcon from "@mui/icons-material/Cancel";
-import DoneOutlinedIcon from '@mui/icons-material/DoneOutlined';
-import AddPhotoAlternateOutlinedIcon from '@mui/icons-material/AddPhotoAlternateOutlined';
+import DoneOutlinedIcon from "@mui/icons-material/DoneOutlined";
+import AddPhotoAlternateOutlinedIcon from "@mui/icons-material/AddPhotoAlternateOutlined";
+import { dialogPaper, dialogTitle, inputStyle, actionButton } from "./utils";
+ 
 /* =====================
    OPTIONS
 ===================== */
@@ -110,152 +112,30 @@ const EditAddDialogue = ({ open, onClose, onSubmit, initialData }) => {
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      fullWidth
-      maxWidth="sm"
-      PaperProps={{
-        sx: {
-          borderRadius: 3,
-          bgcolor: "#15131eff",
-        },
-      }}
-    >
-      <DialogTitle
-        sx={{
-          textAlign: "center",
-          fontWeight: "bold",
-          fontSize: "1.3rem",
-          bgcolor: "#46077dff",
-          color: "#efe9e9ff",
-          py: 1.5,
-        }}
-      >
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" PaperProps={{ sx: dialogPaper }}>
+      <DialogTitle sx={dialogTitle}>
         {formik.values.id ? "Edit Employee" : "Add Employee"}
       </DialogTitle>
 
-      <DialogContent dividers sx={{ px: 3, py: 2 }}>
-        <TextField
-          fullWidth
-          label="Name"
-          margin="dense"
-          sx={{
-    "& .MuiOutlinedInput-root": {
-      borderRadius: 2,
-      color: "#f0f0f0",
-      "& fieldset": {
-        borderColor: "#888",
-      },
-    },
+      <DialogContent dividers>
+        <TextField fullWidth label="Name" margin="dense" sx={inputStyle} {...formik.getFieldProps("name")} />
+        <TextField fullWidth label="Email" margin="dense" sx={inputStyle} {...formik.getFieldProps("email")} />
 
-    "& .MuiInputLabel-root": {
-      color: "#bbb",
-    },
-  }}
-          {...formik.getFieldProps("name")}
-        />
-
-        <TextField
-          fullWidth
-          label="Email"
-          margin="dense"
-          sx={{
-    "& .MuiOutlinedInput-root": {
-      borderRadius: 2,
-      color: "#f0f0f0",
-      "& fieldset": {
-        borderColor: "#888",
-      },
-    },
-
-    "& .MuiInputLabel-root": {
-      color: "#bbb",
-    },
-  }}
-          {...formik.getFieldProps("email")}
-        />
-
-        <TextField
-          select
-          fullWidth
-          label="Department"
-          margin="dense"
-          sx={{
-    "& .MuiOutlinedInput-root": {
-      borderRadius: 2,
-      color: "#f0f0f0",
-      "& fieldset": {
-        borderColor: "#888",
-      },
-    },
-
-    "& .MuiInputLabel-root": {
-      color: "#bbb",
-    },
-  }}
-          {...formik.getFieldProps("department")}
-        >
+        <TextField select fullWidth label="Department" margin="dense" sx={inputStyle} {...formik.getFieldProps("department")}>
           {departmentOptions.map((d) => (
-            <MenuItem key={d} value={d}>
-              {d}
-            </MenuItem>
+            <MenuItem key={d} value={d}>{d}</MenuItem>
           ))}
         </TextField>
 
-        <TextField
-          select
-          fullWidth
-          label="Role"
-          margin="dense"
-          sx={{
-    "& .MuiOutlinedInput-root": {
-      borderRadius: 2,
-      color: "#f0f0f0",
-      "& fieldset": {
-        borderColor: "#888",
-      },
-    },
-
-    "& .MuiInputLabel-root": {
-      color: "#bbb",
-    },
-    
-  }}
-          {...formik.getFieldProps("role")}
-        >
+        <TextField select fullWidth label="Role" margin="dense" sx={inputStyle} {...formik.getFieldProps("role")}>
           {roleOptions.map((r) => (
-            <MenuItem key={r} value={r}>
-              {r}
-            </MenuItem>
+            <MenuItem key={r} value={r}>{r}</MenuItem>
           ))}
         </TextField>
 
-        <TextField
-          select
-          fullWidth
-          label="Status"
-          margin="dense"
-          sx={{
-    "& .MuiOutlinedInput-root": {
-      borderRadius: 2,
-      color: "#f0f0f0",
-      "& fieldset": {
-        borderColor: "#888",
-      },
-      
-    },
-
-    "& .MuiInputLabel-root": {
-      color: "#bbb",
-    },
-  }}
-          {...formik.getFieldProps("status")}
-        >
+        <TextField select fullWidth label="Status" margin="dense" sx={inputStyle} {...formik.getFieldProps("status")}>
           {statusOptions.map((s) => (
-            <MenuItem key={s} value={s}>
-              {s}
-            </MenuItem>
+            <MenuItem key={s} value={s}>{s}</MenuItem>
           ))}
         </TextField>
 
@@ -265,79 +145,26 @@ const EditAddDialogue = ({ open, onClose, onSubmit, initialData }) => {
 
         <FormGroup>
           {assetKeys.map((key) => (
-            <Box
-              key={key}
-              display="flex"
-              alignItems="center"
-              justifyContent="space-between"
-              gap={2}
-              p={1}
-              mb={1}
-              borderRadius={2}
-              sx={{
-                bgcolor: "#15131eff",
-                border: "1px solid #e0e0e0",
-                color:"#bbb"
-              }}
-            >
+            <Box key={key} display="flex" alignItems="center" justifyContent="space-between" gap={2} p={1} mb={1} borderRadius={2} border={1}>
               <FormControlLabel
                 label={key.toUpperCase()}
                 control={
                   <Checkbox
                     checked={formik.values.assets?.[key] || false}
-                    onChange={(e) =>
-                      formik.setFieldValue(
-                        `assets.${key}`,
-                        e.target.checked
-                      )
-                    }
+                    onChange={(e) => formik.setFieldValue(`assets.${key}`, e.target.checked)}
                   />
                 }
               />
 
-              <Button
-                component="label"
-                variant="contained"
-                bgcolor="#f0f0f0"
-                size="small"
-                sx={{ textTransform: "none", borderRadius: 2 }}
-                startIcon = {<AddPhotoAlternateOutlinedIcon/>}
-              >
+              <Button component="label" size="small" startIcon={<AddPhotoAlternateOutlinedIcon />}>
                 Upload
-                <input
-                  hidden
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => uploadImage(e, key)}
-                />
+                <input hidden type="file" accept="image/*" onChange={(e) => uploadImage(e, key)} />
               </Button>
 
               {previews[key] && (
                 <Box position="relative">
-                  <img
-                    src={previews[key]}
-                    width={40}
-                    height={40}
-                    style={{
-                      borderRadius: 6,
-                      objectFit: "cover",
-                      border: "1px solid #ccc",
-                    }}
-                  />
-                  <CancelIcon
-                    fontSize="small"
-                    onClick={() => removeImage(key)}
-                    sx={{
-                      position: "absolute",
-                      top: -6,
-                      right: -6,
-                      bgcolor: "#fff",
-                      borderRadius: "50%",
-                      boxShadow: 1,
-                      cursor: "pointer",
-                      color: "#d32f2f",
-                    }}
-                  />
+                  <img src={previews[key]} width={40} height={40} style={{ borderRadius: 6, objectFit: "cover" }} />
+                  <CancelIcon fontSize="small" onClick={() => removeImage(key)} sx={{ position: "absolute", top: -6, right: -6, cursor: "pointer" }} />
                 </Box>
               )}
             </Box>
@@ -345,28 +172,9 @@ const EditAddDialogue = ({ open, onClose, onSubmit, initialData }) => {
         </FormGroup>
       </DialogContent>
 
-      <DialogActions
-        sx={{
-          px: 3,
-          py: 2,
-          justifyContent: "space-between",
-        }}
-      >
-        <Button onClick={onClose} variant="contained" sx={{ textTransform: "none" , bgcolor:"#cb4444ff"}}>
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          sx={{
-            textTransform: "none",
-            borderRadius: 2,
-            px: 3,
-            bgcolor: "#490670ff",
-            "&:hover": { bgcolor: "#8d5f3d" },
-          }}
-          onClick={formik.handleSubmit}
-          startIcon={<DoneOutlinedIcon/>}
-        >
+      <DialogActions sx={{ justifyContent: "space-between" }}>
+        <Button onClick={onClose} sx={actionButton}>Cancel</Button>
+        <Button onClick={formik.handleSubmit} startIcon={<DoneOutlinedIcon />} sx={actionButton}>
           Save
         </Button>
       </DialogActions>

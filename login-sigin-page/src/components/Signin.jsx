@@ -161,18 +161,18 @@ const Signin = () => {
                   value={values.confirmpassword}
                   onChange={handleChange}
                   sx={muiTextField(theme)}
-                  InputLabelProps={{ shrink: true, sx: { color: "#bbb" } }}
+                  InputLabelProps={{ shrink: true, sx: { color: "#6b7280" } }}
                 />
 
-                <Button type="submit" sx={getButtonStyle(theme)}>
+                <Button type="submit" sx={getButtonStyle(theme)} style={{width:"65%"}}>
                   Sign Up
                 </Button>
 <Stack direction="row" spacing={1}>
-                  <Typography sx={{color:"#ccc"}}>Already have account ? </Typography>
+                  <Typography sx={{color:"#6b7280"}}>Already have account ? </Typography>
                 <Typography
                   sx={{
                     cursor: "pointer",
-                    color: "#00e5ff",
+                    color: "#4f6f52",
                     fontWeight: "bold",
                   }}
                   onClick={() => navigate("/")}

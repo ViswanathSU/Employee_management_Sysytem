@@ -5,7 +5,7 @@ import EmployeePage from "./page/employeePage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import './app.css'
 import Allocation from "./page/Allocation";
-import EmployeeAssets from './page/EmployeeAssets'
+import HomeEmployees from "./page/HomeEmployees";
 
 function App() {
   return (
@@ -28,15 +28,9 @@ function App() {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/employee-assets"
-        element={
-          <ProtectedRoute>
-            <EmployeeAssets />
-          </ProtectedRoute>
-        }
-      />
-    </Routes>
+      <Route path="/home" element={<HomeEmployees />} />
+
+    </Routes>  
   );
 }
 

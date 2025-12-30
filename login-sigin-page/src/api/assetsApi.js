@@ -16,7 +16,11 @@ export const updateAssetQuantity = async ({ assetType, totalQuantity }) => {
  * Get all assets
  */
 export const getAllAssets = async () => {
-  const res = await api.get("/assets/getallasset");
+  const res = await api.get("/assets/getallasset",{
+    headers :{
+      "ngrok-skip-browser-warning":"true",
+    }
+  });
     return res.data;
 };
 

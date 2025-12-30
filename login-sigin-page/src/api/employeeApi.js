@@ -42,3 +42,6 @@ export const updateEmployee = async (id, data) => {
 export const deleteEmployee = async (id) => {
   return api.delete(`/employees/deletebyid/${id}`);
 };
+
+
+// for the employee page

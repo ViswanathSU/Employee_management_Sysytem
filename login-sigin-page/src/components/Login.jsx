@@ -21,8 +21,7 @@ import {
 
 const Login = () => {
   const navigate = useNavigate();
-  const theme = "dark";
-  const colors = getThemeColors(theme);
+  const colors = getThemeColors();
 
   const schema = Yup.object({
     email: Yup.string().email("Invalid email").required("Email required"),
@@ -48,7 +47,7 @@ const Login = () => {
             p: 4,
             borderRadius: 3,
             backgroundColor: colors.paperColor,
-            margin:2.5
+            margin: 2.5,
           }}
         >
           <Typography
@@ -71,7 +70,7 @@ const Login = () => {
               );
 
               if (res.status === "success") {
-                navigate("/employees");
+                navigate("/home");
               } else {
                 alert(res.message);
               }
@@ -85,7 +84,7 @@ const Login = () => {
                     label="Email"
                     value={values.email}
                     onChange={handleChange}
-                    sx={muiTextField(theme)}
+                    sx={muiTextField()}
                     InputLabelProps={{ shrink: true }}
                   />
 
@@ -95,7 +94,7 @@ const Login = () => {
                     label="Password"
                     value={values.password}
                     onChange={handleChange}
-                    sx={muiTextField(theme)}
+                    sx={muiTextField()}
                     InputLabelProps={{ shrink: true }}
                   />
 
@@ -111,21 +110,25 @@ const Login = () => {
                     sx={{ color: colors.textColor }}
                   />
 
-                  <Button type="submit" sx={getButtonStyle(theme)}>
+                  <Button type="submit" sx={getButtonStyle()} style={{width:"65%"}}>
                     LOGIN
                   </Button>
+
                   <Stack direction="row" spacing={1}>
-                  <Typography sx={{color:"#ccc"}}> Don't have account? </Typography>
-                <Typography
-                  sx={{
-                    cursor: "pointer",
-                    color: "#00e5ff",
-                    fontWeight: "bold",
-                  }}
-                  onClick={() => navigate("/signin")}
-                >
-                   Register
-                </Typography></Stack>
+                    <Typography sx={{ color: colors.mutedText }}>
+                      Don't have account?
+                    </Typography>
+                    <Typography
+                      sx={{
+                        cursor: "pointer",
+                        color: colors.linkColor,
+                        fontWeight: "bold",
+                      }}
+                      onClick={() => navigate("/signin")}
+                    >
+                      Register
+                    </Typography>
+                  </Stack>
                 </Stack>
               </Form>
             )}
