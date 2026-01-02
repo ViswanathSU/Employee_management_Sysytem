@@ -33,7 +33,7 @@ export const getButtonStyle = () => ({
 // TEXTFIELD STYLE
 // ===============================
 export const muiTextField = () => ({
-  width: "280px",
+  width: "320px",
 
   "& .MuiInputBase-input": {
     color: "#1f2933",

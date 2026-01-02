@@ -7,6 +7,8 @@ import {
   Typography,
   Paper,
   Stack,
+  Divider,
+  Card
 } from "@mui/material";
 import { jwtDecode } from "jwt-decode";
 import { updateAssetQuantity, getAllAssets } from "../api/assetsApi";
@@ -26,6 +28,7 @@ import { useNavigate } from "react-router-dom";
 import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined";
 import CloseIcon from "@mui/icons-material/Close";
 import AddPhotoAlternateOutlinedIcon from "@mui/icons-material/AddPhotoAlternateOutlined";
+import { Grid } from "@mui/material";
 
 const STATIC_ASSETS = [
   { label: "Laptop", value: "Laptop" },
@@ -56,7 +59,7 @@ const Allocation = () => {
     if (token) {
       try {
         jwtDecode(token);
-      } catch (err) {
+      } catch {
         alert("Session expired. Please login again.");
         localStorage.removeItem("token");
         navigate("/");
@@ -105,7 +108,6 @@ const Allocation = () => {
     }
   };
 
-
   const handleUpdateQuantity = async () => {
     if (!assetType || !totalQuantity)
       return alert("All fields required");
@@ -117,16 +119,12 @@ const Allocation = () => {
       });
 
       alert("Asset quantity updated successfully");
-
       setAssetType("");
       setTotalQuantity("");
       loadAssetSummary();
     } catch (err) {
       console.error(err);
-      alert(
-        err?.response?.data?.message ||
-          "Failed to update quantity"
-      );
+      alert(err?.response?.data?.message || "Failed to update quantity");
     }
   };
 
@@ -142,7 +140,6 @@ const Allocation = () => {
       });
 
       alert("Asset assigned successfully");
-
       setEmployeeId("");
       setAssignAssetType("");
       setImage(null);
@@ -152,10 +149,7 @@ const Allocation = () => {
       loadAssetSummary();
     } catch (err) {
       console.error(err);
-      alert(
-        err?.response?.data?.message ||
-          "Failed to assign asset"
-      );
+      alert(err?.response?.data?.message || "Failed to assign asset");
     }
   };
 
@@ -170,7 +164,6 @@ const Allocation = () => {
       });
 
       alert("Asset returned successfully");
-
       setEmployeeId("");
       setAssignAssetType("");
 
@@ -178,10 +171,7 @@ const Allocation = () => {
       loadAssetSummary();
     } catch (err) {
       console.error(err);
-      alert(
-        err?.response?.data?.message ||
-          "Failed to return asset"
-      );
+      alert(err?.response?.data?.message || "Failed to return asset");
     }
   };
 
@@ -189,38 +179,32 @@ const Allocation = () => {
     <Box minHeight="100vh" sx={{ background: colors.bgColor }}>
       <NavBar />
 
-      <Box display="flex" justifyContent="center" mt={4}>
+      <Box display="flex" justifyContent="center" mt={4} mb={6}>
         <Paper
           elevation={6}
           sx={{
-            width: "75%",
+            width: "60%",
             borderRadius: 3,
-            p: 3,
+            p: 4,
             background: colors.paperColor,
           }}
         >
           {/* HEADER */}
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            mb={3}
-          >
-            <Stack direction="row" spacing={1} alignItems="center">
-              <AssignmentTurnedInOutlinedIcon />
-              <Typography variant="h5" fontWeight="bold">
-                Asset Allocation
-              </Typography>
-            </Stack>
+          <Stack direction="row" spacing={1} alignItems="center" mb={3}>
+            <AssignmentTurnedInOutlinedIcon fontSize="large" />
+            <Typography variant="h5" fontWeight={700}>
+              Asset Allocation
+            </Typography>
           </Stack>
 
-          {/* UPDATE QUANTITY */}
-          <Paper sx={{ p: 3, mb: 4 }}>
-            <Typography variant="h6" fontWeight="bold" mb={2}>
+          <Divider sx={{ mb: 4 }} />
+<Box sx={{display:"flex"}}>          {/* UPDATE QUANTITY */}
+          <Card sx={{ p: 3, mb: 4, borderRadius: 2,display:"flex", flexDirection:"column", alignItems:"center" ,marginLeft:6, height:"350px"}}>
+            <Typography variant="h6" fontWeight={600} mb={2} textAlign={"center"}>
               Update Asset Quantity
             </Typography>
 
-            <Stack direction="row" spacing={2}>
+            <Stack direction="column" spacing={4} alignItems="center">
               <TextField
                 select
                 label="Asset Type"
@@ -246,22 +230,23 @@ const Allocation = () => {
               <Button
                 variant="contained"
                 sx={getButtonStyle()}
+           //     width={40}
                 onClick={handleUpdateQuantity}
-                style={{ width: "15%" }}
               >
                 Update
               </Button>
+              
             </Stack>
-          </Paper>
+          </Card>
 
           {/* ASSIGN / RETURN */}
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" fontWeight="bold" mb={2}>
+          <Card sx={{ p: 3, borderRadius: 2, flexDirection:"column", marginLeft:6, height:"350px"}}>
+            <Typography variant="h6" fontWeight={600} mb={2}>
               Assign / Return Asset
             </Typography>
 
-            <Stack spacing={2}>
-              <Stack direction="row" spacing={2}>
+            <Stack spacing={4}>
+              <Stack direction="column" spacing={2} alignItems="center">
                 <TextField
                   label="Employee ID"
                   value={employeeId}
@@ -282,13 +267,12 @@ const Allocation = () => {
                     </MenuItem>
                   ))}
                 </TextField>
-
                 <Button
                   component="label"
                   variant="outlined"
                   startIcon={<AddPhotoAlternateOutlinedIcon />}
                 >
-                  Upload
+                  Upload Image
                   <input
                     hidden
                     type="file"
@@ -307,9 +291,9 @@ const Allocation = () => {
                   <Box display="flex" alignItems="center" gap={1}>
                     <img
                       src={imagePreview}
-                      width={40}
-                      height={40}
-                      style={{ borderRadius: 6 }}
+                      width={42}
+                      height={42}
+                      style={{ borderRadius: 8 }}
                     />
                     <CloseIcon
                       sx={{ cursor: "pointer" }}
@@ -327,9 +311,8 @@ const Allocation = () => {
                   variant="contained"
                   sx={getButtonStyle()}
                   onClick={handleAssignAsset}
-                  style={{ width: "15%" }}
                 >
-                  Assign
+                  Assign Asset
                 </Button>
 
                 <Button
@@ -337,11 +320,12 @@ const Allocation = () => {
                   color="error"
                   onClick={handleReturnAsset}
                 >
-                  Return
+                  Return Asset
                 </Button>
               </Stack>
-            </Stack>
-          </Paper>
+            </Stack>            
+          </Card>
+          </Box>
         </Paper>
       </Box>
     </Box>

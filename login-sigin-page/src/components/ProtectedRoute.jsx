@@ -1,17 +1,15 @@
-// import { Navigate } from "react-router-dom";
-// import Cookies from "js-cookie";
-
-// const ProtectedRoute = ({ children }) => {
-//   const token = Cookies.get("token");
-//   return token ? children : <Navigate to="/" replace />;
-// };
-
-// export default ProtectedRoute;
 import { Navigate } from "react-router-dom";
+import {jwtDecode} from "jwt-decode";
 
-const ProtectedRoute = ({ children }) => {
+export default function ProtectedRoute({ children, adminOnly }) {
   const token = localStorage.getItem("token");
-  return token ? children : <Navigate to="/" />;
-};
+  if (!token) return <Navigate to="/" />;
 
-export default ProtectedRoute;
+  const user = jwtDecode(token);
+
+  if (adminOnly && user.department !== "MD" && user.role !== "ADMIN") {
+    return <Navigate to={`/employee/${user.id}`} />;
+  }
+
+  return children;
+}

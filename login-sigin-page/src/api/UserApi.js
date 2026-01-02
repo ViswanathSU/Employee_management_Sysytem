@@ -11,14 +11,20 @@ export const loginUser = async ({ email, password }) => {
     const res = await axios.post(
       `${BASE_URL}/auth/login`,
       { email, password },
-      { headers: { "Content-Type": "application/json" } }
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
     );
 
     const token = res.data?.token;
     if (!token) throw new Error("Token missing");
 
-    localStorage.setItem("token", token);
-    console.log("LOGIN TOKEN:", token);
+    // ✅ SINGLE SOURCE OF TRUTH
+    Cookies.remove("token");
+    Cookies.set("token", token, { expires: 1 });
 
     return { status: "success" };
   } catch (err) {
@@ -34,23 +40,19 @@ export const loginUser = async ({ email, password }) => {
 ========================= */
 export const registerUser = async (payload) => {
   try {
-    await axios.post(
-      `${BASE_URL}/auth/register`,
-      payload,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    await axios.post(`${BASE_URL}/auth/register`, payload, {
+      headers: {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true",
+      },
+    });
 
     return { status: "success" };
   } catch (err) {
     return {
       status: "error",
       message:
-        err.response?.data?.message ||
-        "Registration failed",
+        err.response?.data?.message || "Registration failed",
     };
   }
 };

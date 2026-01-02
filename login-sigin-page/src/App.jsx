@@ -1,36 +1,69 @@
 import { Routes, Route } from "react-router-dom";
 import Login from "./components/Login";
 import Signin from "./components/Signin";
-import EmployeePage from "./page/employeePage";
 import ProtectedRoute from "./components/ProtectedRoute";
-import './app.css'
-import Allocation from "./page/Allocation";
 import HomeEmployees from "./page/HomeEmployees";
-
+import UserHome from "./page/UserHome";
+import UserDetail from "./page/UserDetail";
+import Allocation from "./page/Allocation";
+import EmployeePage from "./page/employeePage";
+import './App.css'
 function App() {
   return (
     <Routes>
+      {/* PUBLIC */}
       <Route path="/" element={<Login />} />
       <Route path="/signin" element={<Signin />} />
+
+      {/* ADMIN */}
+      <Route
+  path="/admin/employees"
+  element={
+    <ProtectedRoute adminOnly>
+      <HomeEmployees />
+    </ProtectedRoute>
+  }
+/>
+
+
       <Route
         path="/employees"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute adminOnly>
             <EmployeePage />
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/allocation"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute adminOnly>
             <Allocation />
           </ProtectedRoute>
         }
       />
-      <Route path="/home" element={<HomeEmployees />} />
 
-    </Routes>  
+      {/* EMPLOYEE */}
+      <Route
+  path="/employee/:id"
+  element={
+    <ProtectedRoute>
+      <UserHome />
+    </ProtectedRoute>
+  }
+/>
+
+
+      <Route
+        path="/userdetail"
+        element={
+          <ProtectedRoute>
+            <UserDetail />
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
   );
 }
 

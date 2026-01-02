@@ -12,6 +12,7 @@ import {
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import { loginUser } from "../api/UserApi";
+import { getDecodedToken } from "../utils/auth";
 import { useNavigate } from "react-router-dom";
 import {
   getThemeColors,
@@ -63,20 +64,40 @@ const Login = () => {
           <Formik
             initialValues={{ email: "", password: "", remember: false }}
             validationSchema={schema}
-            onSubmit={async (values) => {
-              const res = await loginUser(
-                { email: values.email, password: values.password },
-                values.remember
-              );
+ onSubmit={async (values) => {
+  try {
+    const res = await loginUser({
+      email: values.email,
+      password: values.password,
+    });
 
-              if (res.status === "success") {
-                navigate("/home");
-              } else {
-                alert(res.message);
-              }
-            }}
+    console.log("LOGIN RESPONSE ", res);
+
+    if (res.status !== "success") {
+      throw new Error(res.message || "Login failed");
+    }
+
+    //  token already saved by loginUser
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("Token not found");
+
+    const user = getDecodedToken();
+    console.log("DECODED USER ", user);
+
+    // role-based navigation
+    if (user.department === "MD") {
+      navigate("/admin/employees");
+    } else {
+      navigate(`/employee/${user.id}`);
+    }
+
+  } catch (err) {
+    console.error("Login failed", err.message);
+  }
+}}
+
           >
-            {({ handleSubmit, handleChange, values }) => (
+            {({ handleSubmit, handleChange, values, isSubmitting }) => (
               <Form onSubmit={handleSubmit}>
                 <Stack spacing={2.5} alignItems="center">
                   <TextField
@@ -110,7 +131,12 @@ const Login = () => {
                     sx={{ color: colors.textColor }}
                   />
 
-                  <Button type="submit" sx={getButtonStyle()} style={{width:"65%"}}>
+                  <Button
+                    type="submit"
+                    sx={getButtonStyle()}
+                    style={{ width: "65%" }}
+                    disabled={isSubmitting}
+                  >
                     LOGIN
                   </Button>
 

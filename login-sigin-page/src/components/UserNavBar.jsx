@@ -33,7 +33,7 @@ export default function NavBar() {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar
-        position="static"
+        position="sticky"
         elevation={2}
         sx={{
           background: colors.bgColor,
@@ -58,9 +58,9 @@ export default function NavBar() {
             </Typography>
 
 
-          {navButton("Home", "/admin/employees")}
-          {navButton("Employees", "/employees")}
-          {navButton("Allocate", "/allocation")}
+          {navButton("Home", "/employee/:id")}
+          {navButton("Details",'/userdetail')}
+          
 
           <Box sx={{ flexGrow: 1 }} />
 

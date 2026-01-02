@@ -7,15 +7,25 @@ export const assignAsset = async ({ employeeId, assetType, image }) => {
   formData.append("assetType", assetType);
   formData.append("image", image);
 
-  const res = await api.post("/allocations/assignasset", formData);
+  const res = await api.post(
+    "/allocations/assignasset",
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data", 
+      },
+    }
+  );
+
   return res.data;
 };
+
 
 // RETURN ASSET (JSON)
 export const returnAsset = async ({ employeeId, assetType }) => {
   const res = await api.post("/allocations/returnasset", {
     employeeId: Number(employeeId),
-    assetType, // match backend
+    assetType, 
   });
   return res.data;
 };

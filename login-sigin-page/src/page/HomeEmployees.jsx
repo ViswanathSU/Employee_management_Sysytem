@@ -23,7 +23,7 @@ import EmailIcon from "@mui/icons-material/Email";
 import WorkIcon from "@mui/icons-material/Work";
 import BusinessIcon from "@mui/icons-material/Business";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-
+import { getLoggedInUser } from "../utils/auth";
 import { getAllAssets } from "../api/assetsApi";
 import { fetchEmployees } from "../api/employeeApi";
 import NavBar from "../components/NavBar";
@@ -36,6 +36,7 @@ import {
   carouselArrow,
   cardActionButton,
 } from "../components/utils";
+import TableChartIcon from '@mui/icons-material/TableChart';
 
 export default function HomeEmployees() {
   const [employees, setEmployees] = useState([]);
@@ -44,41 +45,80 @@ export default function HomeEmployees() {
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const carouselRef = useRef(null);
 
-  // ✅ ADDED: asset count state (ONLY ADDITION)
-  const [assetSummary, setAssetSummary] = useState({
-    total: 0,
-    available: 0,
-    allocated: 0,
-  });
+  //  ADDED: asset count state (ONLY ADDITION)
+  const [assetDetails, setAssetDetails] = useState({
+  Laptop: { total: 0, available: 0, allocated: 0 },
+  Mobile: { total: 0, available: 0, allocated: 0 },
+  ID_Card: { total: 0, available: 0, allocated: 0 },
+  Bag: { total: 0, available: 0, allocated: 0 },
+});
 
-  useEffect(() => {
-    fetchEmployees().then((data) =>
-      setEmployees(Array.isArray(data) ? data : [])
+
+ useEffect(() => {
+  fetchEmployees().then((data) =>
+    setEmployees(Array.isArray(data) ? data : [])
+  );
+
+  getAllAssets().then((assets) => {
+    if (!Array.isArray(assets)) return;
+
+    const total = assets.reduce(
+      (sum, a) => sum + (a.totalQuantity || 0),
+      0
     );
 
-    // ✅ ADDED: fetch asset count (ONLY ADDITION)
-    console.log("get all assest ", getAllAssets())
-    getAllAssets().then((assets) => {
-      if (!Array.isArray(assets)) return;
+    const available = assets.reduce(
+      (sum, a) => sum + (a.availableQuantity || 0),
+      0
+    );
 
-      const total = assets.reduce(
-        (sum, a) => sum + (a.totalQuantity || 0),
-        0
-      );
-      
+    const details = {};
 
-      const available = assets.reduce(
-        (sum, a) => sum + (a.availableQuantity || 0),
-        0
-      );
-
-      setAssetSummary({
-        total,
-        available,
-        allocated: total - available,
-      });
+    assets.forEach((a) => {
+      details[a.assetType] = {
+        total: a.totalQuantity || 0,
+        available: a.availableQuantity || 0,
+        allocated:
+          (a.totalQuantity || 0) - (a.availableQuantity || 0),
+      };
     });
-  }, []);
+
+    setAssetDetails((prev) => ({
+      ...prev,
+      ...details,
+    }));
+  });
+}, []);
+useEffect(() => {
+  const user = getLoggedInUser();
+
+  //  BLOCK NON-ADMIN USERS
+  if (!user || (user.department !== "MD" && user.role !== "ADMIN")) {
+    console.warn("User not admin — skipping admin APIs");
+    return;
+  }
+
+  fetchEmployees().then((data) =>
+    setEmployees(Array.isArray(data) ? data : [])
+  );
+
+  getAllAssets().then((assets) => {
+    if (!Array.isArray(assets)) return;
+
+    const details = {};
+    assets.forEach((a) => {
+      details[a.assetType] = {
+        total: a.totalQuantity || 0,
+        available: a.availableQuantity || 0,
+        allocated:
+          (a.totalQuantity || 0) - (a.availableQuantity || 0),
+      };
+    });
+
+    setAssetDetails((prev) => ({ ...prev, ...details }));
+  });
+}, []);
+
 
   const scrollToIndex = (index) => {
     if (!carouselRef.current) return;
@@ -110,92 +150,134 @@ export default function HomeEmployees() {
   };
 
   return (
-    <Box sx={pageWrapper} fullWidth>
+    <Box sx={pageWrapper}>
       <NavBar />
 
       <Paper elevation={4} sx={pagePaper} style={{ margin: 10 }}>
-        {/* HERO */}
-        <Box sx={heroSection}>
-          <Stack direction="row" spacing={3} alignItems="center">
-            <PeopleIcon fontSize="large" />
+<Box sx={heroSection}>
+  <Stack spacing={3}>
+    {/* TITLE */}
+    <Stack direction="row" spacing={2} alignItems="center" sx={{margin:1}}>
+      <TableChartIcon fontSize="large" />
+      <Typography variant="h5" fontWeight={700}>
+        Asset Overview
+      </Typography>
+    </Stack>
+    {/* ASSET DASHBOARD CARDS */}
+    <Stack
+      direction="row"
+      spacing={2}
+      flexWrap="wrap"
+      justifyContent="space-between"
+    >
+      {Object.entries(assetDetails).map(([type, data]) => (
+        <Paper
+          key={type}
+          elevation={3}
+          sx={{
+            p: 2,
+            minWidth: 180,
+            borderRadius: 2,
+            flexGrow: 1,
+          }}
+        >
+          <Typography
+            fontWeight={600}
+            sx={{ mb: 1 }}
+          >
+            {type.replace("_", " ")}
+          </Typography>
 
-            <Box>
-              <Typography variant="h5" fontWeight={700}>
-                Employees Overview
-              </Typography>
-
-              {/* ✅ ADDED: asset counts display (ONLY ADDITION) */}
-              <Typography variant="body2" sx={{ opacity: 0.7 }}>
-                Total Assets: {assetSummary.total} | Available:{" "}
-                {assetSummary.available} | Allocated:{" "}
-                {assetSummary.allocated}
-              </Typography>
-            </Box>
+          <Stack spacing={0.5}>
+            <Typography variant="body2">
+              <b>Total:</b> {data.total}
+            </Typography>
+            <Typography variant="body2">
+              <b>Available:</b> {data.available}
+            </Typography>
+            <Typography
+              variant="body2"
+              color="error"
+            >
+              <b>Allocated:</b> {data.allocated}
+            </Typography>
           </Stack>
-        </Box>
+        </Paper>
+      ))}
+    </Stack>
+  </Stack>
+</Box>
+ <Stack direction="row" spacing={2} alignItems="center" sx={{marginLeft:4}}>
+      <PeopleIcon fontSize="large" />
+      <Typography variant="h5" fontWeight={700}>
+        Employees Overview
+      </Typography>
+    </Stack>
+<Box sx={{ position: "relative", width: "100%", mt: 2 }}>
+  {/* LEFT ARROW */}
+  <IconButton
+    sx={carouselArrow("left")}
+    disabled={activeIndex === 0}
+    onClick={() => scrollToIndex(activeIndex - 1)}
+  >
+    <ArrowBackIosNewIcon />
+  </IconButton>
 
-        {/* ARROWS */}
-        <IconButton
-          sx={carouselArrow("left")}
-          disabled={activeIndex === 0}
-          onClick={() => scrollToIndex(activeIndex - 1)}
-        >
-          <ArrowBackIosNewIcon />
-        </IconButton>
+  {/* RIGHT ARROW */}
+  <IconButton
+    sx={carouselArrow("right")}
+    disabled={activeIndex >= employees.length - 1}
+    onClick={() => scrollToIndex(activeIndex + 1)}
+  >
+    <ArrowForwardIosIcon />
+  </IconButton>
 
-        <IconButton
-          sx={carouselArrow("right")}
-          disabled={activeIndex >= employees.length - 1}
-          onClick={() => scrollToIndex(activeIndex + 1)}
-        >
-          <ArrowForwardIosIcon />
-        </IconButton>
+  {/* CAROUSEL */}
+  <Box ref={carouselRef} sx={carouselStyle}>
+    {employees.map((emp, index) => (
+      <Card key={emp.id} sx={employeeCard(index === activeIndex)}>
+        <CardContent>
+          <Typography variant="h6" fontWeight={600}>
+            {emp.name}
+          </Typography>
 
-        {/* CAROUSEL */}
-        <Box ref={carouselRef} sx={carouselStyle}>
-          {employees.map((emp, index) => (
-            <Card key={emp.id} sx={employeeCard(index === activeIndex)}>
-              <CardContent>
-                <Typography variant="h6" fontWeight={600}>
-                  {emp.name}
-                </Typography>
+          <Stack spacing={0.5} mt={1}>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <EmailIcon fontSize="small" />
+              <Typography variant="body2">{emp.email}</Typography>
+            </Stack>
 
-                <Stack spacing={0.5} mt={1}>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <EmailIcon fontSize="small" />
-                    <Typography variant="body2">{emp.email}</Typography>
-                  </Stack>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <WorkIcon fontSize="small" />
+              <Typography variant="body2">{emp.role}</Typography>
+            </Stack>
 
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <WorkIcon fontSize="small" />
-                    <Typography variant="body2">{emp.role}</Typography>
-                  </Stack>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <BusinessIcon fontSize="small" />
+              <Typography variant="body2">{emp.department}</Typography>
+            </Stack>
+          </Stack>
 
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <BusinessIcon fontSize="small" />
-                    <Typography variant="body2">{emp.department}</Typography>
-                  </Stack>
-                </Stack>
+          <Box mt={2}>
+            <Chip label={emp.status} />
+          </Box>
 
-                <Box mt={2}>
-                  <Chip label={emp.status} />
-                </Box>
-
-                <Button
-                  size="small"
-                  startIcon={<VisibilityIcon />}
-                  sx={cardActionButton}
-                  onClick={() => {
-                    setSelectedEmployee(emp);
-                    setOpen(true);
-                  }}
-                >
-                  View Details
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </Box>
+          <Button
+            size="small"
+            startIcon={<VisibilityIcon />}
+            sx={cardActionButton}
+            onClick={() => {
+              setSelectedEmployee(emp);
+              setOpen(true);
+            }}
+          >
+            View Details
+          </Button>
+        </CardContent>
+      </Card>
+    ))}
+  </Box>
+</Box>
 
         {/* DETAILS DIALOG */}
         <Dialog open={open} onClose={() => setOpen(false)} fullWidth>

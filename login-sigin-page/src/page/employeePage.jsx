@@ -7,14 +7,13 @@ import {
   Paper,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-
 import {
   fetchEmployees,
   createEmployee,
   updateEmployee,
   deleteEmployee,
 } from "../api/employeeApi";
-
+import { CustomLoadingOverlay } from "../components/CustomLoadingOverlay";
 import PersonAddAlt1OutlinedIcon from "@mui/icons-material/PersonAddAlt1Outlined";
 
 import EditAddDialogue from "../components/EditAddDialogue";
@@ -182,6 +181,9 @@ const EmployeePage = () => {
             autoHeight
             pageSizeOptions={[5, 10, 25]}
             disableRowSelectionOnClick
+            slots={{
+            loadingOverlay: CustomLoadingOverlay,
+            }}
             sx={{
               borderRadius: 2,
               border: "1px solid #e0e0e0",
