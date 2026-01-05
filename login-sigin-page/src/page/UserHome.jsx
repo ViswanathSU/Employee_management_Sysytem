@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import UserNavBar from "../components/UserNavBar";
 import { getMyProfile } from "../api/profileApi";
+import { getButtonStyle } from "../components/utils";
 
 export default function UserHome() {
   const navigate = useNavigate();
@@ -82,7 +83,7 @@ export default function UserHome() {
 
         <Button
           variant="contained"
-          sx={{ mt: 4 }}
+          sx={{...getButtonStyle(), marginTop:2}}
           onClick={() => navigate("/userdetail")}
         >
           View Full Profile

@@ -22,7 +22,7 @@ export const loginUser = async ({ email, password }) => {
     const token = res.data?.token;
     if (!token) throw new Error("Token missing");
 
-    // ✅ SINGLE SOURCE OF TRUTH
+    // SINGLE SOURCE OF TRUTH
     Cookies.remove("token");
     Cookies.set("token", token, { expires: 1 });
 

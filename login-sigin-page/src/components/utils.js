@@ -1,6 +1,3 @@
-// ===============================
-// THEME COLORS – NOTARY LIGHT THEME
-
 import { colors } from "@mui/material";
 
 // ===============================

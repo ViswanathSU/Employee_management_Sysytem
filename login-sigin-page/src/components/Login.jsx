@@ -19,6 +19,7 @@ import {
   getButtonStyle,
   muiTextField,
 } from "./utils";
+import {Snowfall} from 'react-snowfall';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ const Login = () => {
 
   const schema = Yup.object({
     email: Yup.string().email("Invalid email").required("Email required"),
-    password: Yup.string().min(6).required("Password required"),
+    password: Yup.string().min(6, "Minimum 6 characters").required("Password required"),
   });
 
   return (
@@ -39,8 +40,16 @@ const Login = () => {
         alignItems: "center",
         background: colors.bgColor,
       }}
-    >
-      <Box sx={{ padding: 22 }}>
+    ><Snowfall
+    style={{
+      position: "absolute",
+      width: "100%",
+      height: "100%",
+    }}
+    snowflakeCount={250} 
+    color="white"        
+  />
+      <Box sx={{ p: 8 }}>
         <Paper
           elevation={10}
           sx={{
@@ -48,7 +57,7 @@ const Login = () => {
             p: 4,
             borderRadius: 3,
             backgroundColor: colors.paperColor,
-            margin: 2.5,
+            margin:15
           }}
         >
           <Typography
@@ -62,53 +71,61 @@ const Login = () => {
           </Typography>
 
           <Formik
-            initialValues={{ email: "", password: "", remember: false }}
+            initialValues={{
+              email: "",
+              password: "",
+              remember: false,
+            }}
             validationSchema={schema}
- onSubmit={async (values) => {
-  try {
-    const res = await loginUser({
-      email: values.email,
-      password: values.password,
-    });
+            onSubmit={async (values, { setSubmitting }) => {
+              try {
+                const res = await loginUser({
+                  email: values.email,
+                  password: values.password,
+                });
 
-    console.log("LOGIN RESPONSE ", res);
+                if (res.status !== "success") {
+                  throw new Error(res.message || "Login failed");
+                }
 
-    if (res.status !== "success") {
-      throw new Error(res.message || "Login failed");
-    }
+                const user = getDecodedToken();
+                if (!user) throw new Error("Invalid token");
 
-    //  token already saved by loginUser
-    const token = localStorage.getItem("token");
-    if (!token) throw new Error("Token not found");
-
-    const user = getDecodedToken();
-    console.log("DECODED USER ", user);
-
-    // role-based navigation
-    if (user.department === "MD") {
-      navigate("/admin/employees");
-    } else {
-      navigate(`/employee/${user.id}`);
-    }
-
-  } catch (err) {
-    console.error("Login failed", err.message);
-  }
-}}
-
+                // role based navigation
+                if (user.department === "MD") {
+                  navigate("/admin/employees");
+                } else {
+                  navigate(`/employee/${user.id}`);
+                }
+              } catch (err) {
+                alert(err.message);
+              } finally {
+                setSubmitting(false);
+              }
+            }}
           >
-            {({ handleSubmit, handleChange, values, isSubmitting }) => (
+            {({
+              handleSubmit,
+              handleChange,
+              values,
+              errors,
+              touched,
+              isSubmitting,
+            }) => (
               <Form onSubmit={handleSubmit}>
                 <Stack spacing={2.5} alignItems="center">
+                  {/* EMAIL */}
                   <TextField
                     name="email"
                     label="Email"
                     value={values.email}
                     onChange={handleChange}
                     sx={muiTextField()}
-                    InputLabelProps={{ shrink: true }}
+                    error={touched.email && Boolean(errors.email)}
+                    helperText={touched.email && errors.email}
                   />
 
+                  {/* PASSWORD */}
                   <TextField
                     name="password"
                     type="password"
@@ -116,21 +133,26 @@ const Login = () => {
                     value={values.password}
                     onChange={handleChange}
                     sx={muiTextField()}
-                    InputLabelProps={{ shrink: true }}
+                    error={touched.password && Boolean(errors.password)}
+                    helperText={touched.password && errors.password}
                   />
 
+                  {/* REMEMBER ME */}
                   <FormControlLabel
                     control={
                       <Checkbox
                         name="remember"
                         checked={values.remember}
                         onChange={handleChange}
+                        sx={{ color: colors.textColor, marginLeft:3 }}
+                        
                       />
                     }
                     label="Remember me"
-                    sx={{ color: colors.textColor }}
+                    sx={{ alignSelf: "flex-start", color: colors.textColor }}
                   />
 
+                  {/* LOGIN BUTTON */}
                   <Button
                     type="submit"
                     sx={getButtonStyle()}
@@ -140,9 +162,10 @@ const Login = () => {
                     LOGIN
                   </Button>
 
+                  {/* SIGN UP TEXT */}
                   <Stack direction="row" spacing={1}>
                     <Typography sx={{ color: colors.mutedText }}>
-                      Don't have account?
+                      Don't have an account?
                     </Typography>
                     <Typography
                       sx={{
@@ -152,7 +175,7 @@ const Login = () => {
                       }}
                       onClick={() => navigate("/signin")}
                     >
-                      Register
+                      Sign Up
                     </Typography>
                   </Stack>
                 </Stack>

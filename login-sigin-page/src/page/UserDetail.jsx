@@ -1,10 +1,8 @@
-// src/page/UserDetail.jsx
 import {
   Box,
   Typography,
   Paper,
   Stack,
-  Button,
   Divider,
   Avatar,
   Grid,
@@ -15,19 +13,27 @@ import {
 import { useEffect, useState } from "react";
 import UserNavBar from "../components/UserNavBar";
 import { getMyProfile } from "../api/profileApi";
-import { useNavigate } from "react-router-dom";
 import { getAssetImage } from "../utils/imageHelper";
 
 export default function UserDetail() {
   const [user, setUser] = useState(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     getMyProfile()
-      .then(setUser)
+      .then((data) => {
+        console.log("USER PROFILE:", data);
+        console.log("USER ASSETS:", data.assets);
+        console.log("USER ASSETS image:", data.assets.assetType);
+        setUser(data);
+      })
       .catch(console.error);
   }, []);
+  /*const IMAGE_BASE_URL = "https://hard-ingratiating-ila.ngrok-free.dev";
 
+  const getAssetImage = (asset) => 
+  asset ? `${IMAGE_BASE_URL}/${asset.replace(/\\/g, "/")}` : "https://via.placeholder.com/300x400";
+
+*/
   if (!user) {
     return (
       <Typography align="center" mt={5}>
@@ -42,11 +48,9 @@ export default function UserDetail() {
 
       {/* USER DETAILS */}
       <Paper sx={{ p: 5, m: 3, borderRadius: 3 }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center">
-          <Typography variant="h5" fontWeight={700}>
-            User Details
-          </Typography>
-        </Stack>
+        <Typography variant="h5" fontWeight={700}>
+          User Details
+        </Typography>
 
         <Divider sx={{ my: 4 }} />
 
@@ -86,8 +90,11 @@ export default function UserDetail() {
 
         <Grid container spacing={4}>
           {user.assets?.length ? (
-            user.assets.map((asset) => (
-              <Grid item xs={12} sm={6} md={4} key={asset.id}>
+            user.assets.map((asset, index) => (
+              <Grid
+                key={asset.id ?? `${asset.assetType}-${index}`}
+                size={{ xs: 12, sm: 6, md: 4 }}
+              >
                 <Card
                   sx={{
                     borderRadius: 3,
@@ -105,6 +112,10 @@ export default function UserDetail() {
                       p: 2,
                       backgroundColor: "#fafafa",
                     }}
+                    /*onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = "/no-image.png";
+                    }}*/
                   />
 
                   <CardContent>
@@ -112,7 +123,7 @@ export default function UserDetail() {
                       {asset.assetType}
                     </Typography>
                     <Typography color="text.secondary">
-                      {asset.status}
+                      {asset.status || "Assigned"}
                     </Typography>
                   </CardContent>
                 </Card>

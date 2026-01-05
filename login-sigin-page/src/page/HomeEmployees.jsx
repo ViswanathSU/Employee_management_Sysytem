@@ -14,6 +14,7 @@ import {
   IconButton,
   Paper,
   Stack,
+  Skeleton,
 } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
@@ -23,10 +24,13 @@ import EmailIcon from "@mui/icons-material/Email";
 import WorkIcon from "@mui/icons-material/Work";
 import BusinessIcon from "@mui/icons-material/Business";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import TableChartIcon from "@mui/icons-material/TableChart";
+
 import { getLoggedInUser } from "../utils/auth";
 import { getAllAssets } from "../api/assetsApi";
 import { fetchEmployees } from "../api/employeeApi";
 import NavBar from "../components/NavBar";
+
 import {
   pageWrapper,
   pagePaper,
@@ -36,90 +40,61 @@ import {
   carouselArrow,
   cardActionButton,
 } from "../components/utils";
-import TableChartIcon from '@mui/icons-material/TableChart';
 
 export default function HomeEmployees() {
   const [employees, setEmployees] = useState([]);
+  const [assetDetails, setAssetDetails] = useState({
+    Laptop: { total: 0, available: 0, allocated: 0 },
+    Mobile: { total: 0, available: 0, allocated: 0 },
+    ID_Card: { total: 0, available: 0, allocated: 0 },
+    Bag: { total: 0, available: 0, allocated: 0 },
+  });
+
+  const [loadingEmployees, setLoadingEmployees] = useState(true);
+  const [loadingAssets, setLoadingAssets] = useState(true);
+
   const [activeIndex, setActiveIndex] = useState(0);
   const [open, setOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
+
   const carouselRef = useRef(null);
 
-  //  ADDED: asset count state (ONLY ADDITION)
-  const [assetDetails, setAssetDetails] = useState({
-  Laptop: { total: 0, available: 0, allocated: 0 },
-  Mobile: { total: 0, available: 0, allocated: 0 },
-  ID_Card: { total: 0, available: 0, allocated: 0 },
-  Bag: { total: 0, available: 0, allocated: 0 },
-});
+  const IMAGE_BASE_URL = "https://hard-ingratiating-ila.ngrok-free.dev";
 
+  /* ------------------- FETCH DATA ------------------- */
+  useEffect(() => {
+    const user = getLoggedInUser();
 
- useEffect(() => {
-  fetchEmployees().then((data) =>
-    setEmployees(Array.isArray(data) ? data : [])
-  );
+    if (!user || (user.department !== "MD" && user.role !== "ADMIN")) {
+      setLoadingEmployees(false);
+      setLoadingAssets(false);
+      return;
+    }
 
-  getAllAssets().then((assets) => {
-    if (!Array.isArray(assets)) return;
+    fetchEmployees()
+      .then((data) => setEmployees(Array.isArray(data) ? data : []))
+      .finally(() => setLoadingEmployees(false));
 
-    const total = assets.reduce(
-      (sum, a) => sum + (a.totalQuantity || 0),
-      0
-    );
+    getAllAssets()
+      .then((assets) => {
+        if (!Array.isArray(assets)) return;
 
-    const available = assets.reduce(
-      (sum, a) => sum + (a.availableQuantity || 0),
-      0
-    );
+        const details = {};
+        assets.forEach((a) => {
+          details[a.assetType] = {
+            total: a.totalQuantity || 0,
+            available: a.availableQuantity || 0,
+            allocated:
+              (a.totalQuantity || 0) - (a.availableQuantity || 0),
+          };
+        });
 
-    const details = {};
+        setAssetDetails((prev) => ({ ...prev, ...details }));
+      })
+      .finally(() => setLoadingAssets(false));
+  }, []);
 
-    assets.forEach((a) => {
-      details[a.assetType] = {
-        total: a.totalQuantity || 0,
-        available: a.availableQuantity || 0,
-        allocated:
-          (a.totalQuantity || 0) - (a.availableQuantity || 0),
-      };
-    });
-
-    setAssetDetails((prev) => ({
-      ...prev,
-      ...details,
-    }));
-  });
-}, []);
-useEffect(() => {
-  const user = getLoggedInUser();
-
-  //  BLOCK NON-ADMIN USERS
-  if (!user || (user.department !== "MD" && user.role !== "ADMIN")) {
-    console.warn("User not admin — skipping admin APIs");
-    return;
-  }
-
-  fetchEmployees().then((data) =>
-    setEmployees(Array.isArray(data) ? data : [])
-  );
-
-  getAllAssets().then((assets) => {
-    if (!Array.isArray(assets)) return;
-
-    const details = {};
-    assets.forEach((a) => {
-      details[a.assetType] = {
-        total: a.totalQuantity || 0,
-        available: a.availableQuantity || 0,
-        allocated:
-          (a.totalQuantity || 0) - (a.availableQuantity || 0),
-      };
-    });
-
-    setAssetDetails((prev) => ({ ...prev, ...details }));
-  });
-}, []);
-
-
+  /* ------------------- HELPERS ------------------- */
   const scrollToIndex = (index) => {
     if (!carouselRef.current) return;
     const cardWidth = carouselRef.current.firstChild?.offsetWidth || 300;
@@ -130,156 +105,166 @@ useEffect(() => {
     setActiveIndex(index);
   };
 
-  const IMAGE_BASE_URL = "https://hard-ingratiating-ila.ngrok-free.dev";
-
   const getAssetImage = (asset) => {
     if (!asset?.image) return "";
-
     if (asset.image.includes("localhost:5000")) {
-      return asset.image.replace(
-        "http://localhost:5000",
-        IMAGE_BASE_URL
-      );
+      return asset.image.replace("http://localhost:5000", IMAGE_BASE_URL);
     }
-
-    if (asset.image.startsWith("http")) {
-      return asset.image;
-    }
-
+    if (asset.image.startsWith("http")) return asset.image;
     return `${IMAGE_BASE_URL}${asset.image}`;
   };
 
+  /* ------------------- UI ------------------- */
   return (
     <Box sx={pageWrapper}>
       <NavBar />
 
       <Paper elevation={4} sx={pagePaper} style={{ margin: 10 }}>
-<Box sx={heroSection}>
-  <Stack spacing={3}>
-    {/* TITLE */}
-    <Stack direction="row" spacing={2} alignItems="center" sx={{margin:1}}>
-      <TableChartIcon fontSize="large" />
-      <Typography variant="h5" fontWeight={700}>
-        Asset Overview
-      </Typography>
-    </Stack>
-    {/* ASSET DASHBOARD CARDS */}
-    <Stack
-      direction="row"
-      spacing={2}
-      flexWrap="wrap"
-      justifyContent="space-between"
-    >
-      {Object.entries(assetDetails).map(([type, data]) => (
-        <Paper
-          key={type}
-          elevation={3}
-          sx={{
-            p: 2,
-            minWidth: 180,
-            borderRadius: 2,
-            flexGrow: 1,
-          }}
-        >
-          <Typography
-            fontWeight={600}
-            sx={{ mb: 1 }}
+        {/* ------------------- ASSET OVERVIEW ------------------- */}
+        <Box sx={heroSection}>
+          <Stack spacing={3}>
+            <Stack direction="row" spacing={2} alignItems="center">
+              <TableChartIcon fontSize="large" />
+              <Typography variant="h5" fontWeight={700}>
+                Asset Overview
+              </Typography>
+            </Stack>
+
+            <Stack direction="row" spacing={2} flexWrap="wrap">
+              {loadingAssets
+                ? Array.from({ length: 4 }).map((_, i) => (
+                    <Paper
+                      key={i}
+                      elevation={3}
+                      sx={{ p: 2, minWidth: 180, borderRadius: 2 }}
+                    >
+                      <Skeleton width="60%" />
+                      <Skeleton />
+                      <Skeleton />
+                      <Skeleton />
+                    </Paper>
+                  ))
+                : Object.entries(assetDetails).map(([type, data]) => (
+                    <Paper
+                      key={type}
+                      elevation={3}
+                      sx={{ p: 2, minWidth: 180, borderRadius: 2 }}
+                    >
+                      <Typography fontWeight={600} sx={{ mb: 1 }}>
+                        {type.replace("_", " ")}
+                      </Typography>
+                      <Typography variant="body2">
+                        <b>Total:</b> {data.total}
+                      </Typography>
+                      <Typography variant="body2">
+                        <b>Available:</b> {data.available}
+                      </Typography>
+                      <Typography variant="body2" color="error">
+                        <b>Allocated:</b> {data.allocated}
+                      </Typography>
+                    </Paper>
+                  ))}
+            </Stack>
+          </Stack>
+        </Box>
+
+        {/* ------------------- EMPLOYEE OVERVIEW ------------------- */}
+        <Stack direction="row" spacing={2} alignItems="center" sx={{ ml: 4 }}>
+          <PeopleIcon fontSize="large" />
+          <Typography variant="h5" fontWeight={700}>
+            Employees Overview
+          </Typography>
+        </Stack>
+
+        <Box sx={{ position: "relative", mt: 2 }}>
+          <IconButton
+            sx={carouselArrow("left")}
+            disabled={activeIndex === 0}
+            onClick={() => scrollToIndex(activeIndex - 1)}
           >
-            {type.replace("_", " ")}
-          </Typography>
+            <ArrowBackIosNewIcon />
+          </IconButton>
 
-          <Stack spacing={0.5}>
-            <Typography variant="body2">
-              <b>Total:</b> {data.total}
-            </Typography>
-            <Typography variant="body2">
-              <b>Available:</b> {data.available}
-            </Typography>
-            <Typography
-              variant="body2"
-              color="error"
-            >
-              <b>Allocated:</b> {data.allocated}
-            </Typography>
-          </Stack>
-        </Paper>
-      ))}
-    </Stack>
-  </Stack>
-</Box>
- <Stack direction="row" spacing={2} alignItems="center" sx={{marginLeft:4}}>
-      <PeopleIcon fontSize="large" />
-      <Typography variant="h5" fontWeight={700}>
-        Employees Overview
-      </Typography>
-    </Stack>
-<Box sx={{ position: "relative", width: "100%", mt: 2 }}>
-  {/* LEFT ARROW */}
-  <IconButton
-    sx={carouselArrow("left")}
-    disabled={activeIndex === 0}
-    onClick={() => scrollToIndex(activeIndex - 1)}
-  >
-    <ArrowBackIosNewIcon />
-  </IconButton>
+          <IconButton
+            sx={carouselArrow("right")}
+            disabled={activeIndex >= employees.length - 1}
+            onClick={() => scrollToIndex(activeIndex + 1)}
+          >
+            <ArrowForwardIosIcon />
+          </IconButton>
 
-  {/* RIGHT ARROW */}
-  <IconButton
-    sx={carouselArrow("right")}
-    disabled={activeIndex >= employees.length - 1}
-    onClick={() => scrollToIndex(activeIndex + 1)}
-  >
-    <ArrowForwardIosIcon />
-  </IconButton>
+          <Box ref={carouselRef} sx={carouselStyle}>
+            {loadingEmployees
+              ? Array.from({ length: 4 }).map((_, i) => (
+                  <Card key={i} sx={employeeCard(false)}>
+                    <CardContent>
+                      <Skeleton width="70%" height={30} />
+                      <Skeleton />
+                      <Skeleton />
+                      <Skeleton />
+                      <Skeleton
+                        variant="rectangular"
+                        height={32}
+                        sx={{ mt: 2, borderRadius: 1 }}
+                      />
+                    </CardContent>
+                  </Card>
+                ))
+              : employees.map((emp, index) => (
+                  <Card
+                    key={emp.id}
+                    sx={employeeCard(index === activeIndex)}
+                  >
+                    <CardContent>
+                      <Typography variant="h6" fontWeight={600}>
+                        {emp.name}
+                      </Typography>
 
-  {/* CAROUSEL */}
-  <Box ref={carouselRef} sx={carouselStyle}>
-    {employees.map((emp, index) => (
-      <Card key={emp.id} sx={employeeCard(index === activeIndex)}>
-        <CardContent>
-          <Typography variant="h6" fontWeight={600}>
-            {emp.name}
-          </Typography>
+                      <Stack spacing={0.5} mt={1}>
+                        <Stack direction="row" spacing={1}>
+                          <EmailIcon fontSize="small" />
+                          <Typography variant="body2">
+                            {emp.email}
+                          </Typography>
+                        </Stack>
 
-          <Stack spacing={0.5} mt={1}>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <EmailIcon fontSize="small" />
-              <Typography variant="body2">{emp.email}</Typography>
-            </Stack>
+                        <Stack direction="row" spacing={1}>
+                          <WorkIcon fontSize="small" />
+                          <Typography variant="body2">
+                            {emp.role}
+                          </Typography>
+                        </Stack>
 
-            <Stack direction="row" spacing={1} alignItems="center">
-              <WorkIcon fontSize="small" />
-              <Typography variant="body2">{emp.role}</Typography>
-            </Stack>
+                        <Stack direction="row" spacing={1}>
+                          <BusinessIcon fontSize="small" />
+                          <Typography variant="body2">
+                            {emp.department}
+                          </Typography>
+                        </Stack>
+                      </Stack>
 
-            <Stack direction="row" spacing={1} alignItems="center">
-              <BusinessIcon fontSize="small" />
-              <Typography variant="body2">{emp.department}</Typography>
-            </Stack>
-          </Stack>
+                      <Box mt={2}>
+                        <Chip label={emp.status} />
+                      </Box>
 
-          <Box mt={2}>
-            <Chip label={emp.status} />
+                      <Button
+                        size="small"
+                        startIcon={<VisibilityIcon />}
+                        sx={cardActionButton}
+                        onClick={() => {
+                          setSelectedEmployee(emp);
+                          setOpen(true);
+                        }}
+                      >
+                        View Details
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
           </Box>
+        </Box>
 
-          <Button
-            size="small"
-            startIcon={<VisibilityIcon />}
-            sx={cardActionButton}
-            onClick={() => {
-              setSelectedEmployee(emp);
-              setOpen(true);
-            }}
-          >
-            View Details
-          </Button>
-        </CardContent>
-      </Card>
-    ))}
-  </Box>
-</Box>
-
-        {/* DETAILS DIALOG */}
+        {/* ------------------- DETAILS DIALOG ------------------- */}
         <Dialog open={open} onClose={() => setOpen(false)} fullWidth>
           <DialogTitle>Employee Details</DialogTitle>
 
@@ -297,8 +282,7 @@ useEffect(() => {
               </Typography>
 
               <Box display="flex" gap={2} mt={2} flexWrap="wrap">
-                {selectedEmployee.assets &&
-                selectedEmployee.assets.length > 0 ? (
+                {selectedEmployee.assets?.length ? (
                   selectedEmployee.assets.map((asset, i) => (
                     <Box key={i} textAlign="center" width={100}>
                       <Avatar
@@ -308,17 +292,13 @@ useEffect(() => {
                       >
                         {!asset?.image && asset.assetType?.[0]}
                       </Avatar>
-
-                      <Typography variant="caption" display="block">
+                      <Typography variant="caption">
                         {asset.assetType.replace("_", " ")}
                       </Typography>
                     </Box>
                   ))
                 ) : (
-                  <Typography
-                    variant="body2"
-                    sx={{ opacity: 0.7, fontStyle: "italic" }}
-                  >
+                  <Typography fontStyle="italic">
                     No assets assigned
                   </Typography>
                 )}

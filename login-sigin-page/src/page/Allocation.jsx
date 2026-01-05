@@ -8,7 +8,8 @@ import {
   Paper,
   Stack,
   Divider,
-  Card
+  Card,
+  CircularProgress,
 } from "@mui/material";
 import { jwtDecode } from "jwt-decode";
 import { updateAssetQuantity, getAllAssets } from "../api/assetsApi";
@@ -28,7 +29,6 @@ import { useNavigate } from "react-router-dom";
 import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined";
 import CloseIcon from "@mui/icons-material/Close";
 import AddPhotoAlternateOutlinedIcon from "@mui/icons-material/AddPhotoAlternateOutlined";
-import { Grid } from "@mui/material";
 
 const STATIC_ASSETS = [
   { label: "Laptop", value: "Laptop" },
@@ -49,9 +49,9 @@ const Allocation = () => {
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
 
-  const [assets, setAssets] = useState([]);
-  const [totalAssets, setTotalAssets] = useState(0);
-  const [allocatedAssets, setAllocatedAssets] = useState(0);
+  const [loadingUpdate, setLoadingUpdate] = useState(false);
+  const [loadingAssign, setLoadingAssign] = useState(false);
+  const [loadingReturn, setLoadingReturn] = useState(false);
 
   /* ------------------ JWT CHECK ------------------ */
   useEffect(() => {
@@ -65,113 +65,82 @@ const Allocation = () => {
         navigate("/");
       }
     }
-  }, []);
+  }, [navigate]);
 
   /* ------------------ LOAD DATA ------------------ */
   useEffect(() => {
-    loadMappings();
-    loadAssetSummary();
+    getEmployeesWithAssets();
+    getAllAssets();
   }, []);
 
-  const loadMappings = async () => {
-    try {
-      await getEmployeesWithAssets();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const loadAssetSummary = async () => {
-    try {
-      const res = await getAllAssets();
-      const data = Array.isArray(res) ? res : [];
-
-      setAssets(data);
-
-      let total = 0;
-      let allocated = 0;
-
-      data.forEach((a) => {
-        total += Number(a.totalQuantity || 0);
-        allocated +=
-          Number(a.totalQuantity || 0) -
-          Number(a.availableQuantity || 0);
-      });
-
-      setTotalAssets(total);
-      setAllocatedAssets(allocated);
-    } catch (err) {
-      console.error(err);
-      setAssets([]);
-      setTotalAssets(0);
-      setAllocatedAssets(0);
-    }
-  };
+  /* ------------------ HANDLERS ------------------ */
 
   const handleUpdateQuantity = async () => {
-    if (!assetType || !totalQuantity)
-      return alert("All fields required");
+    if (!assetType || !totalQuantity) {
+      alert("All fields required");
+      return;
+    }
 
+    setLoadingUpdate(true);
     try {
       await updateAssetQuantity({
         assetType,
         totalQuantity: Number(totalQuantity),
       });
-
-      alert("Asset quantity updated successfully");
+      alert("Asset quantity updated");
       setAssetType("");
       setTotalQuantity("");
-      loadAssetSummary();
     } catch (err) {
-      console.error(err);
-      alert(err?.response?.data?.message || "Failed to update quantity");
+      alert(err?.response?.data?.message || "Update failed");
+    } finally {
+      setLoadingUpdate(false);
     }
   };
 
   const handleAssignAsset = async () => {
-    if (!employeeId || !assignAssetType || !image)
-      return alert("All fields required");
+    if (!employeeId || !assignAssetType || !image) {
+      alert("All fields required");
+      return;
+    }
 
+    setLoadingAssign(true);
     try {
       await assignAsset({
         employeeId,
         assetType: assignAssetType,
         image,
       });
-
-      alert("Asset assigned successfully");
+      alert("Asset assigned");
       setEmployeeId("");
       setAssignAssetType("");
       setImage(null);
       setImagePreview(null);
-
-      loadMappings();
-      loadAssetSummary();
     } catch (err) {
-      console.error(err);
-      alert(err?.response?.data?.message || "Failed to assign asset");
+      alert(err?.response?.data?.message || "Assign failed");
+    } finally {
+      setLoadingAssign(false);
     }
   };
 
   const handleReturnAsset = async () => {
-    if (!employeeId || !assignAssetType)
-      return alert("Employee ID & Asset required");
+    if (!employeeId || !assignAssetType) {
+      alert("Employee ID & Asset required");
+      return;
+    }
 
+    setLoadingReturn(true);
     try {
       await returnAsset({
         employeeId,
         assetType: assignAssetType,
       });
-
-      alert("Asset returned successfully");
+      alert("Asset returned");
       setEmployeeId("");
       setAssignAssetType("");
-
-      loadMappings();
-      loadAssetSummary();
     } catch (err) {
-      console.error(err);
-      alert(err?.response?.data?.message || "Failed to return asset");
+      alert(err?.response?.data?.message || "Return failed");
+    } finally {
+      setLoadingReturn(false);
     }
   };
 
@@ -179,74 +148,78 @@ const Allocation = () => {
     <Box minHeight="100vh" sx={{ background: colors.bgColor }}>
       <NavBar />
 
-      <Box display="flex" justifyContent="center" mt={4} mb={6}>
+      <Box display="flex" justifyContent="center" mt={4}>
         <Paper
           elevation={6}
           sx={{
             width: "60%",
-            borderRadius: 3,
             p: 4,
+            borderRadius: 3,
             background: colors.paperColor,
           }}
         >
           {/* HEADER */}
           <Stack direction="row" spacing={1} alignItems="center" mb={3}>
-            <AssignmentTurnedInOutlinedIcon fontSize="large" />
+            <AssignmentTurnedInOutlinedIcon />
             <Typography variant="h5" fontWeight={700}>
               Asset Allocation
             </Typography>
           </Stack>
 
           <Divider sx={{ mb: 4 }} />
-<Box sx={{display:"flex"}}>          {/* UPDATE QUANTITY */}
-          <Card sx={{ p: 3, mb: 4, borderRadius: 2,display:"flex", flexDirection:"column", alignItems:"center" ,marginLeft:6, height:"350px"}}>
-            <Typography variant="h6" fontWeight={600} mb={2} textAlign={"center"}>
-              Update Asset Quantity
-            </Typography>
 
-            <Stack direction="column" spacing={4} alignItems="center">
-              <TextField
-                select
-                label="Asset Type"
-                value={assetType}
-                onChange={(e) => setAssetType(e.target.value)}
-                sx={muiTextField()}
-              >
-                {STATIC_ASSETS.map((a) => (
-                  <MenuItem key={a.value} value={a.value}>
-                    {a.label}
-                  </MenuItem>
-                ))}
-              </TextField>
+          <Box display="flex" gap={4}>
+            {/* UPDATE QUANTITY */}
+            <Card sx={{ p: 3, flex: 1 }}>
+              <Typography variant="h6" mb={2} textAlign="center">
+                Update Asset Quantity
+              </Typography>
 
-              <TextField
-                label="Total Quantity"
-                type="number"
-                value={totalQuantity}
-                onChange={(e) => setTotalQuantity(e.target.value)}
-                sx={muiTextField()}
-              />
+              <Stack spacing={3} alignItems="center">
+                <TextField
+                  select
+                  label="Asset Type"
+                  value={assetType}
+                  onChange={(e) => setAssetType(e.target.value)}
+                  sx={muiTextField()}
+                >
+                  {STATIC_ASSETS.map((a) => (
+                    <MenuItem key={a.value} value={a.value}>
+                      {a.label}
+                    </MenuItem>
+                  ))}
+                </TextField>
 
-              <Button
-                variant="contained"
-                sx={getButtonStyle()}
-           //     width={40}
-                onClick={handleUpdateQuantity}
-              >
-                Update
-              </Button>
-              
-            </Stack>
-          </Card>
+                <TextField
+                  label="Total Quantity"
+                  type="number"
+                  value={totalQuantity}
+                  onChange={(e) => setTotalQuantity(e.target.value)}
+                  sx={muiTextField()}
+                />
 
-          {/* ASSIGN / RETURN */}
-          <Card sx={{ p: 3, borderRadius: 2, flexDirection:"column", marginLeft:6, height:"350px"}}>
-            <Typography variant="h6" fontWeight={600} mb={2}>
-              Assign / Return Asset
-            </Typography>
+                <Button
+                  variant="contained"
+                  sx={getButtonStyle()}
+                  disabled={loadingUpdate}
+                  onClick={handleUpdateQuantity}
+                >
+                  {loadingUpdate ? (
+                    <CircularProgress size={22} sx={{ color: "#fff" }} />
+                  ) : (
+                    "Update"
+                  )}
+                </Button>
+              </Stack>
+            </Card>
 
-            <Stack spacing={4}>
-              <Stack direction="column" spacing={2} alignItems="center">
+            {/* ASSIGN / RETURN */}
+            <Card sx={{ p: 3, flex: 1 }}>
+              <Typography variant="h6" mb={2}>
+                Assign / Return Asset
+              </Typography>
+
+              <Stack spacing={3} alignItems="center">
                 <TextField
                   label="Employee ID"
                   value={employeeId}
@@ -267,11 +240,8 @@ const Allocation = () => {
                     </MenuItem>
                   ))}
                 </TextField>
-                <Button
-                  component="label"
-                  variant="outlined"
-                  startIcon={<AddPhotoAlternateOutlinedIcon />}
-                >
+
+                <Button component="label" variant="outlined">
                   Upload Image
                   <input
                     hidden
@@ -289,12 +259,7 @@ const Allocation = () => {
 
                 {imagePreview && (
                   <Box display="flex" alignItems="center" gap={1}>
-                    <img
-                      src={imagePreview}
-                      width={42}
-                      height={42}
-                      style={{ borderRadius: 8 }}
-                    />
+                    <img src={imagePreview} width={40} height={40} />
                     <CloseIcon
                       sx={{ cursor: "pointer" }}
                       onClick={() => {
@@ -304,27 +269,36 @@ const Allocation = () => {
                     />
                   </Box>
                 )}
-              </Stack>
 
-              <Stack direction="row" spacing={2}>
-                <Button
-                  variant="contained"
-                  sx={getButtonStyle()}
-                  onClick={handleAssignAsset}
-                >
-                  Assign Asset
-                </Button>
+                <Stack direction="row" spacing={2}>
+                  <Button
+                    variant="contained"
+                    disabled={loadingAssign}
+                    sx={getButtonStyle()}
+                    onClick={handleAssignAsset}
+                  >
+                    {loadingAssign ? (
+                      <CircularProgress size={22} sx={{ color: "#fff" }} />
+                    ) : (
+                      "Assign"
+                    )}
+                  </Button>
 
-                <Button
-                  variant="contained"
-                  color="error"
-                  onClick={handleReturnAsset}
-                >
-                  Return Asset
-                </Button>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    disabled={loadingReturn}
+                    onClick={handleReturnAsset}
+                  >
+                    {loadingReturn ? (
+                      <CircularProgress size={22} sx={{ color: "#fff" }} />
+                    ) : (
+                      "Return"
+                    )}
+                  </Button>
+                </Stack>
               </Stack>
-            </Stack>            
-          </Card>
+            </Card>
           </Box>
         </Paper>
       </Box>
