@@ -17,7 +17,7 @@ import {
   getButtonStyle,
   muiTextField,
 } from "./utils";
-import { Snowfall } from "react-snowfall";
+//import { Snowfall } from "react-snowfall";
 
 const DEPARTMENTS = ["MD", "TL", "Fresher"];
 const ROLES = ["Backend", "Frontend", "UIUX", "Testing"];
@@ -48,7 +48,8 @@ const Signin = () => {
         alignItems: "center",
         background: colors.bgColor,
       }}
-    ><Snowfall
+    >
+      {/* <Snowfall
         style={{
           position: "absolute",
           width: "100%",
@@ -56,7 +57,7 @@ const Signin = () => {
         }}
         snowflakeCount={250} 
         color="white"        
-      />
+      /> */}
       <Box sx={{ padding: 10 }}>
         <Paper
           elevation={10}

@@ -39,16 +39,16 @@ const Login = () => {
         justifyContent: "center",
         alignItems: "center",
         background: colors.bgColor,
-      }}
-    ><Snowfall
-    style={{
-      position: "absolute",
-      width: "100%",
-      height: "100%",
-    }}
-    snowflakeCount={250} 
-    color="white"        
-  />
+      }}>
+        {/* <Snowfall
+  //   style={{
+  //     position: "absolute",
+  //     width: "100%",
+  //     height: "100%",
+  //   }}
+  //   snowflakeCount={250} 
+  //   color="white"        
+  // /> */}
       <Box sx={{ p: 8 }}>
         <Paper
           elevation={10}
